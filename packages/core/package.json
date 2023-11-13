@@ -1,0 +1,14 @@
+{
+  "name": "core",
+  "version": "0.0.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "tsconfig": "workspace:*",
+    "typescript": "^5.0.4"
+  }
+}
