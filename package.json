@@ -4,5 +4,8 @@
   "author": "Iamstarcode.",
   "devDependencies": {
     "tsconfig": "workspace:*"
+  },
+  "scripts": {
+    "anim4u" :"pnpm --filter @iamstarcode/4u-helper build && pnpm --filter anim4u animepahe"
   }
 }
