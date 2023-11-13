@@ -2,6 +2,7 @@
   "name": "@iamstarcode/4u-helper",
   "version": "1.0.1",
   "description": "",
+  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {

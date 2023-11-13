@@ -250,9 +250,6 @@ export abstract class BaseProvider implements IBase {
       `${sanitizeFileName(this.query)}.json`
     );
 
-    /////////////
-    //console.log(`${sanitizeFileName(this.query)}.json`, 'quey');
-
     if (this.options.force) {
       return await callback(this.query);
     } else {
