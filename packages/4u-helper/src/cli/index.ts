@@ -69,4 +69,13 @@ export const episodesSeperated = (value: string) => {
   return _.sortBy(unique, (o: number) => o);
 };
 
+export const handleIfNewVersion = async (version: string) => {
+  const response = await fetch(`https://registry.npmjs.org/anim4u`);
+  const latestVersion = await response.json();
+
+  if (latestVersion != version) {
+    console.log('New version available: ', chalk.green(latestVersion));
+    console.log('Version installed: ', chalk.red(version));
+  }
+};
 //export { checkFormat, handleEpisodes };

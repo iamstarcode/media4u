@@ -72,9 +72,6 @@ importers:
       '@types/tough-cookie':
         specifier: ^4.0.2
         version: 4.0.2
-      husky:
-        specifier: ^8.0.0
-        version: 8.0.0
       release-it:
         specifier: ^15.10.3
         version: 15.10.3
