@@ -1,5 +1,8 @@
 {
   "private": true,
   "name": "media4u",
-  "author": "Iamstarcode."
+  "author": "Iamstarcode.",
+  "devDependencies": {
+    "tsconfig": "workspace:*"
+  }
 }

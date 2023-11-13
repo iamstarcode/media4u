@@ -1,16 +1,16 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Default",
   "compilerOptions": {
-    "strict": true,
-    "sourceMap": true,
-    "target": "es2020",
+    "target": "es2017",
     "module": "ES2020",
-    "moduleResolution": "Node",
-    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
     "esModuleInterop": true,
-    "allowJs": true
-  },
-  "ts-node": {
-    "esm": true
-  },
-  "exclude": ["node_modules", "build", "**/*spec.ts"]
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
 }
