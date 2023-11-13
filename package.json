@@ -3,9 +3,11 @@
   "name": "media4u",
   "author": "Iamstarcode.",
   "devDependencies": {
+    "husky": "^8.0.0",
     "tsconfig": "workspace:*"
   },
   "scripts": {
-    "anim4u" :"pnpm --filter @iamstarcode/4u-helper build && pnpm --filter anim4u animepahe"
+    "anim4u": "pnpm --filter @iamstarcode/4u-helper build && pnpm --filter anim4u animepahe",
+    "prepare": "husky install"
   }
 }
