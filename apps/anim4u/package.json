@@ -1,7 +1,5 @@
 {
-  "bin": {
-    "anim4u": "./build/cli.js"
-  },
+  "bin": "./build/cli.js",
   "name": "anim4u",
   "version": "0.1.5",
   "description": "",
@@ -31,18 +29,26 @@
     "cheerio": "1.0.0-rc.12",
     "cli-progress": "^3.12.0",
     "commander": "^10.0.1",
+    "inquirer": "^9.2.12",
     "inquirer-search-list": "^1.2.6",
+    "lodash": "^4.17.21",
     "node-downloader-helper": "^2.1.7",
     "ora": "^7.0.1",
     "tough-cookie": "^4.1.3",
     "tsconfig": "workspace:*"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.6.5",
+    "@commitlint/config-conventional": "^17.6.5",
+    "@types/inquirer": "^9",
+    "@types/lodash": "^4.14.201",
     "@types/node": "^20.2.5",
     "@types/tough-cookie": "^4.0.2",
+    "husky": "^8.0.0",
     "release-it": "^15.10.3",
     "ts-node": "^10.9.1",
     "tsc-watch": "^6.0.4",
+    "tsconfig": "workspace:*",
     "typescript": "^5.0.4"
   }
 }
