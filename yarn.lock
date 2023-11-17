@@ -268,7 +268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@iamstarcode/4u-lib@workspace:*, @iamstarcode/4u-lib@workspace:packages/4u-lib":
+"@iamstarcode/4u-lib@workspace:^, @iamstarcode/4u-lib@workspace:packages/4u-lib":
   version: 0.0.0-use.local
   resolution: "@iamstarcode/4u-lib@workspace:packages/4u-lib"
   dependencies:
@@ -757,7 +757,7 @@ __metadata:
     "@commitlint/cli": "npm:^17.6.5"
     "@commitlint/config-conventional": "npm:^17.6.5"
     "@consumet/extensions": "npm:^1.5.2"
-    "@iamstarcode/4u-lib": "workspace:*"
+    "@iamstarcode/4u-lib": "workspace:^"
     "@lzwme/m3u8-dl": "npm:^0.0.6"
     "@types/inquirer": "npm:^9"
     "@types/lodash": "npm:^4.14.201"
