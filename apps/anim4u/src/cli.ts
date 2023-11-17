@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { handleIfNewVersion } from '@iamstarcode/4u-helper';
+import { handleIfNewVersion } from '@iamstarcode/4u-lib';
 
 (async () => {
   const program = new Command();

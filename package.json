@@ -3,9 +3,9 @@
   "author": "Iamstarcode.",
   "scripts": {
     "build": "yarn workspaces foreach run build",
-    "anim4u": "yarn workspace @iamstarcode/4u-helper run build && yarn workspace anim4u run animepahe",
-    "flix": "pnpm --filter @iamstarcode/4u-helper build && pnpm --filter movie4u flixhq",
-    "mhd": "pnpm --filter @iamstarcode/4u-helper build && pnpm --filter movie4u mhd",
+    "anim4u": "yarn workspace @iamstarcode/4u-lib run build && yarn workspace anim4u run animepahe",
+    "flix": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter movie4u flixhq",
+    "mhd": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter movie4u mhd",
     "prepare": "husky install"
   },
   "private": true,
