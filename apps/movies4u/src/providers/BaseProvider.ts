@@ -5,7 +5,6 @@ import {
   IMovieResult,
   ISource,
   IVideo,
-  MediaFormat,
   StreamingServers,
   TvType,
 } from '@consumet/extensions';

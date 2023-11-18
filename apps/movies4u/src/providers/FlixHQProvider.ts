@@ -1,4 +1,4 @@
-import { MOVIES } from '@consumet/extensions-x';
+import { MOVIES } from '@consumet/extensions';
 import _ from 'lodash';
 
 import { BaseProvider } from './BaseProvider.js';

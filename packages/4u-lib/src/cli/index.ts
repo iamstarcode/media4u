@@ -23,6 +23,7 @@ export const checkFormat = (episodes: any) => {
 
 export const handleEpisodes = (selectedEpisodes: string[]) => {
   checkFormat(selectedEpisodes);
+
   let eps: any[] = [];
   for (let i = 0; i < selectedEpisodes.length; i++) {
     const ep = selectedEpisodes[i]; ///'s9:1-5,7,8-9
@@ -33,7 +34,17 @@ export const handleEpisodes = (selectedEpisodes: string[]) => {
     eps.push({ season: parseInt(season), episodes: streamedEpisodes });
   }
 
-  return eps;
+  const groupedBySeason = _.groupBy(eps, 'season');
+
+  const mergedData = _.map(groupedBySeason, (group: []) =>
+    _.mergeWith(...group, (objValue: any, srcValue: any) => {
+      if (_.isArray(objValue)) {
+        return _.sortBy(_.union(objValue, srcValue));
+      }
+    })
+  );
+
+  return mergedData;
 };
 
 export const episodesSeperated = (value: string) => {

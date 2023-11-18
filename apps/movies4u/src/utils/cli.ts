@@ -1,41 +1,6 @@
 import chalk from 'chalk';
 import _ from 'lodash';
 
-export const checkFormat = (episodes: any) => {
-  for (let i = 0; i < episodes.selectedEpisodes; i++) {
-    const episode = episodes[i];
-    const regexPattern =
-      /^s[1-9][0-9]*:([1-9][0-9]*)-?([1-9][0-9]*)?(?:,([1-9][0-9]*)-?([1-9][0-9]*)?)*$/;
-
-    if (!regexPattern.test(episode)) {
-      console.log(chalk.red('Episode is not written correctly.'));
-      console.log(chalk.redBright.bgWhite(episodes));
-      console.log(
-        chalk.yellow('s[season_number]:[episode_number-episode_number][...]')
-      );
-      console.log(chalk.yellow('Example s1:1-5,7,8-9'));
-      console.log(chalk.yellow('Season one episode 1 to 5,7 and 8 to 9'));
-
-      process.exit(1);
-    }
-  }
-};
-
-export const handleEpisodes = (selectedEpisodes: string[]) => {
-  checkFormat(selectedEpisodes);
-  let eps: any[] = [];
-  for (let i = 0; i < selectedEpisodes.length; i++) {
-    const ep = selectedEpisodes[i]; ///'s9:1-5,7,8-9
-    const season = ep.substring(1, ep.indexOf(':'));
-    const streamedEpisodes = episodesSeperated(
-      ep.substring(ep.indexOf(':') + 1)
-    );
-    eps.push({ season: parseInt(season), episodes: streamedEpisodes });
-  }
-
-  return eps;
-};
-
 const episodesSeperated = (value: string) => {
   const season = value.split;
   const allEpisodes = [];

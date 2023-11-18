@@ -1,3 +1,3 @@
-import { handleIfNewVersion } from './cli/index.js';
+import * as CLI from './cli/index.js';
 
-export { handleIfNewVersion };
+export { CLI };

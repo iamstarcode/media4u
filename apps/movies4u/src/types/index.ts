@@ -1,5 +1,5 @@
-import FlixHQ from '@consumet/extensions-x/dist/providers/movies/flixhq';
-import MovieHdWatch from '@consumet/extensions-x/dist/providers/movies/movidhdwatch';
+import FlixHQ from '@consumet/extensions/dist/providers/movies/flixhq';
+import MovieHdWatch from '@consumet/extensions/dist/providers/movies/movidhdwatch';
 
 export interface IMedia {
   name?: string;

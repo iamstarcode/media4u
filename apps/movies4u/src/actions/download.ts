@@ -3,11 +3,13 @@ import { OptionsType, Provider } from '../types/index.js';
 
 import { FlixHQProvider } from '../providers/FlixHQProvider.js';
 import chalk from 'chalk';
-import { checkFormat, handleEpisodes } from '../utils/cli.js';
 import { MovieHdWatchProvider } from '../providers/MovieHdWatchProvider.js';
 
+import { CLI } from '@iamstarcode/4u-lib';
+
 const downloadAction = async (_query: Provider[], options: OptionsType) => {
-  const streamedEpisodes = handleEpisodes(options.selectedEpisodes);
+  const streamedEpisodes = CLI.handleEpisodes(options.selectedEpisodes);
+
   options.selectedEpisodes = streamedEpisodes;
 
   const query = _query[1];
