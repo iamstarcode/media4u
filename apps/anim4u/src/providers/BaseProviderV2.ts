@@ -44,7 +44,6 @@ export class BaseProvider {
 
   async run() {
     let medias: IAnimeResult[] = await this.getAnime();
-
     let media: IAnimeResult = await CLI.inquireMedia(medias);
 
     let quality;
@@ -79,7 +78,7 @@ export class BaseProvider {
   async fetchAnime(): Promise<IAnimeResult[]> {
     const spinner = this.getSpinner();
     let providerColor;
-    if (this._provider == 'animepahe2') {
+    if (this._provider == 'animepahe2' || this._provider == 'animepahe') {
       providerColor = chalk.hex('#d5015b')('Animepahe');
     } else if (this._provider == 'gogoanime') {
       providerColor = chalk.greenBright(this.provider.name);
@@ -94,7 +93,6 @@ export class BaseProvider {
     spinner.text = searchText;
     spinner.start();
     const medias: IAnimeResult[] = [];
-
     let page = 1;
     let hasNextPage: boolean;
 

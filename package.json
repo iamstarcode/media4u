@@ -3,7 +3,8 @@
   "author": "Iamstarcode.",
   "scripts": {
     "build": "pnpm -r build",
-    "anim4u": "pnpm -F @iamstarcode/4u-lib build && pnpm -F anim4u animepahe",
+    "animepahe": "pnpm -F @iamstarcode/4u-lib build && pnpm -F anim4u animepahe",
+    "gogo": "pnpm -F @iamstarcode/4u-lib build && pnpm -F anim4u gogo",
     "flix": "pnpm --filter @iamstarcode/4u-lib build && pnpm i && pnpm --filter movie4u flixhq",
     "mhd": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter movie4u mhd",
     "prepare": "husky install"

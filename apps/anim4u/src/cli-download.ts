@@ -18,7 +18,7 @@ function main() {
     .option('-d, --debug', 'Debugging', false)
     .option('-f, --force', 'Force refecth', false)
     .option('-q, --quality <number>', 'Quality', pasrseResolution)
-    .option('-e, --episodes <items>', 'Episode', episodesSeperated)
+    .option('-e, --episodes [items]', 'Episode', episodesSeperated, [1])
     .action(downloadAction);
   program.parseAsync(process.argv);
 }
