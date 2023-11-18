@@ -45,10 +45,10 @@ export class AnimepaheProvider extends BaseProvider {
 
     let media: IMedia = await await CLI.inquireMedia(medias);
 
-    let quality;
+    let quality: number;
 
     if (!this.options.quality) {
-      quality = await this.inquireQuality();
+      quality = await CLI.inquireQuality();
     } else {
       quality = this.options.quality;
     }
@@ -58,12 +58,11 @@ export class AnimepaheProvider extends BaseProvider {
       this.fetchLinks
     );
 
-    //
     //TV or Movie
     if (type == 'TV') {
-      await this.downloadSeries(media, quality, numberOfEpisodes);
+      await this.downloadSeries(media, quality.toString(), numberOfEpisodes);
     } else if (type == 'Movie') {
-      await this.downloadMovie(media, quality, numberOfEpisodes);
+      await this.downloadMovie(media, quality.toString(), numberOfEpisodes);
     }
 
     process.exit(0);

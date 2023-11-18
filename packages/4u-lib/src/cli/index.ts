@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import _ from 'lodash';
 import autocomplete from 'inquirer-autocomplete-standalone';
+import select, { Separator } from '@inquirer/select';
 
 export const checkFormat = (episodes: any) => {
   for (let i = 0; i < episodes.selectedEpisodes; i++) {
@@ -112,3 +113,20 @@ export const inquireMedia = async (medias: any[]) => {
   const mediaInfo = _.find(medias, (o: { title: string }) => o.title == answer);
   return mediaInfo;
 };
+
+export async function inquireQuality() {
+  const qualityRes = [
+    { value: '360' },
+    { value: '480' },
+    { value: '720' },
+    { value: '800' },
+    { value: '1080' },
+    { value: '2160' },
+  ];
+  const answer = await select({
+    message: 'Select prefered quality',
+    choices: qualityRes,
+  });
+
+  return parseInt(answer);
+}

@@ -10,9 +10,6 @@ import path from 'path';
 
 import fs, { readFileSync } from 'node:fs';
 
-import inquirer from 'inquirer';
-import inquirerSearchList from 'inquirer-search-list';
-
 import _ from 'lodash';
 import ora from 'ora';
 import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime.js';
@@ -55,29 +52,6 @@ export abstract class BaseProvider implements IBase {
   }
 
   run() {}
-
-  public async inquireQuality() {
-    const ui = new inquirer.ui.BottomBar();
-    const qualityRes = ['360', '480', '720', '800', '1080', '2160'];
-    const inq = await inquirer
-      .prompt([
-        {
-          type: 'list',
-          message: 'Select a prefered quality',
-          name: 'quality',
-          choices: qualityRes.map((s) => ({
-            name: `${s}p`,
-            value: s,
-          })),
-        },
-      ])
-      .then(function (answer: { quality: string }) {
-        return answer.quality;
-      })
-      .catch((e: any) => console.log(e));
-
-    return inq;
-  }
 
   async download(url: string, fileName: string, folder: string = './') {
     const ratio = process.stdout.columns <= 56 ? 0.2 : 0.25;
