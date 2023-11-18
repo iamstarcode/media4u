@@ -1,16 +1,15 @@
 import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime.js';
-import AnimeSaturn from '@consumet/extensions/dist/providers/anime/animesaturn';
 import AnimePahe from '@consumet/extensions/dist/providers/anime/animepahe.js';
 
-export interface IMedia {
+export interface IAnimeResult {
   name?: string;
   title?: string;
   link?: string;
   id?: string;
   type?: string;
-  year?: string;
   session?: string;
   episodes?: string;
+  [x: string]: any;
 }
 
 export interface ILink {
@@ -19,7 +18,7 @@ export interface ILink {
   links: [];
 }
 
-export interface ISeriesMedia extends IMedia {
+export interface ISeriesMedia extends IAnimeResult {
   seasons: [
     {
       season: string;

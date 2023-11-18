@@ -3,7 +3,7 @@ import { DownloaderHelper } from 'node-downloader-helper';
 
 import { IO } from '@iamstarcode/4u-lib';
 
-import { IMedia, OptionsType, ILink } from '../types/index.js';
+import { IAnimeResult, OptionsType, ILink } from '../types/index.js';
 import cliProgress from 'cli-progress';
 import { humanFileSize } from '../utils/human-file-szie.js';
 import path from 'path';
@@ -13,6 +13,7 @@ import fs, { readFileSync } from 'node:fs';
 import _ from 'lodash';
 import ora from 'ora';
 import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime.js';
+import { IAnimeInfo } from '@consumet/extensions';
 
 export interface IBaseProvider {
   baseUrl?: string;
@@ -105,7 +106,7 @@ export abstract class BaseProvider implements IBase {
     });
   }
 
-  getLinksPath(mediaInfo: IMedia) {
+  getLinksPath(mediaInfo: IAnimeResult) {
     const linksPath = path.join(
       this.searchPath ?? '',
       IO.sanitizeFileName(mediaInfo?.title ?? ''),
@@ -135,12 +136,9 @@ export abstract class BaseProvider implements IBase {
     return choosen;
   }
 
-  async getLinks(
-    media: IMedia,
-    callback: (
-      _media: IMedia,
-      searchText: string
-    ) => Promise<{ type?: string; numberOfEpisodes: number }>
+  async getAnimeInfo(
+    media: IAnimeResult,
+    callback: (_media: IAnimeResult, searchText: string) => Promise<IAnimeInfo>
   ): Promise<{ type?: string; numberOfEpisodes: number }> {
     const mediaPath = path.join(
       this.searchPath ?? '',
@@ -188,8 +186,8 @@ export abstract class BaseProvider implements IBase {
   }
 
   async getAnime(
-    callback: (_query: string) => Promise<IMedia[]>
-  ): Promise<IMedia[]> {
+    callback: (_query: string) => Promise<IAnimeResult[]>
+  ): Promise<IAnimeResult[]> {
     const queryFile = path.join(
       this.searchPath ?? '',
       `${IO.sanitizeFileName(this.query)}.json`

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { homedir, type } from 'node:os';
+import { homedir } from 'node:os';
 import path from 'node:path';
-//import { IAnimeResult, ILink } from '../types/index.js';
+import { IAnimeResult, ILink } from '../types/index.js';
 import { BaseProvider, IBaseProvider } from './BaseProvider.js';
 import { BaseProvider as BaseProviderV2 } from './BaseProviderV2.js';
 import * as cheerio from 'cheerio';
@@ -17,20 +17,7 @@ import axios from 'axios';
 
 import tough from 'tough-cookie';
 import { wrapper } from 'axios-cookiejar-support';
-import {
-  ANIME,
-  IAnimeInfo,
-  IAnimeResult,
-  ISource,
-  ITitle,
-  MediaFormat,
-  TvType,
-} from '@consumet/extensions';
-import { ILink, IProvider } from '../types/index.js';
-import { DownloaderHelper } from 'node-downloader-helper';
-import { humanFileSize } from '../utils/human-file-szie.js';
-
-import cliProgress from 'cli-progress';
+import { IAnimeInfo } from '@consumet/extensions';
 
 interface IEpisode {
   id: string;
@@ -44,19 +31,21 @@ interface ILinks {
   links: [{ episode: string; session: string }];
 }
 
-export class AnimepaheProvider extends BaseProviderV2 {
-  constructor({ options, query }: IProvider) {
-    super({
-      options,
-      query,
-      provider: new ANIME.AnimePahe(),
-      searchPath: path.join(homedir(), 'anim4u', 'animepahe', 'Searches'),
-      _provider: 'animepahe',
-    });
+export class AnimepaheProvider extends BaseProvider {
+  constructor({
+    baseUrl = 'https://animepahe.ru',
+    provider = 'animepahe',
+    searchPath = path.join(homedir(), 'anim4u', 'animepahe', 'Searches'),
+    options,
+    query,
+  }: IBaseProvider) {
+    super({ baseUrl, provider, options, searchPath, query });
   }
 
   override async run(): Promise<void> {
-    let medias: IAnimeResult[] = await this.getAnime();
+    //TODO when I fianlly coalesce, I wont need to pass a callback here...
+    //Will use base getAnime which will then use this fetchAnime..
+    let medias: IAnimeResult[] = await this.getAnime(this.fetchAnime);
 
     let media: IAnimeResult = await await CLI.inquireMedia(medias);
 
@@ -68,21 +57,28 @@ export class AnimepaheProvider extends BaseProviderV2 {
       quality = this.options.quality;
     }
 
-    console.log('heremmm...');
+    //TODO when I fianlly coalesce, I wont need to pass a callback here...
+    //Will use base getAnimeInfo which will then use this getAnimeInfo..
+    const { numberOfEpisodes, type } = await this.getAnimeInfo(
+      media,
+      this.fetchAnimeInfo
+    );
 
-    const animeInfo: IAnimeInfo = await this.getAnimeInfo(media);
-
-    await this.handleDownload(animeInfo, quality.toString());
+    //TV or Movie
+    if (type == 'TV') {
+      await this.downloadSeries(media, quality.toString(), numberOfEpisodes);
+    } else if (type == 'Movie') {
+      await this.downloadMovie(media, quality.toString(), numberOfEpisodes);
+    }
 
     process.exit(0);
   }
 
-  /*   async fetchAnime(): Promise<IAnimeResult[]> {
+  private async fetchAnime(): Promise<IAnimeResult[]> {
     const searchText = `Searching ${chalk.yellow(this.query)} from ${chalk.hex(
       '#d5015b'
     )('Animepahe')} `;
-    const spinner = this.getSpinner();
-    spinner.text = searchText;
+    const spinner = await this.getSpinner(searchText);
 
     const res = await axios.get(
       `https://animepahe.ru/api?m=search&q=${encodeURIComponent(this.query)}`,
@@ -109,9 +105,9 @@ export class AnimepaheProvider extends BaseProviderV2 {
       );
       return medias;
     }
-  } */
+  }
 
-  /*   private async fetchAnimeInfo(
+  private async fetchAnimeInfo(
     media: IAnimeResult,
     searchText: string
   ): Promise<IAnimeInfo> {
@@ -178,7 +174,55 @@ export class AnimepaheProvider extends BaseProviderV2 {
       //  return { type: links.type, numberOfEpisodes: allLinks.length };
     }
   }
- */
+
+  private async getPaheDownloadPage(
+    media: IAnimeResult,
+    _episode: string,
+    retrying: boolean
+  ) {
+    const linksPath = this.getLinksPath(media);
+    const linksString = readFileSync(linksPath).toString();
+    const links: ILink = JSON.parse(linksString);
+
+    const episode: IEpisode = _.find(
+      links.links,
+      (o: IEpisode) => o.episode == _episode
+    );
+
+    if (!episode) {
+      return { qualities: [], episode: null };
+    }
+
+    let html = '';
+    try {
+      const res = await axios(
+        `https://animepahe.ru/play/${media.session}/${episode.session}`,
+        {
+          method: 'GET',
+        }
+      );
+
+      html = await res.data;
+    } catch (error) {
+      if (this.options.debug) {
+        console.log(error);
+      }
+    }
+
+    const $ = cheerio.load(html);
+
+    const qualities: { quality: string; url: string }[] = [];
+    $('#pickDownload > a').each((i, el) => {
+      let quality = $(el).text();
+      const regex = /(\d+)p/;
+      const match = quality.match(regex);
+      quality = match ? match[1] : '720';
+      const url = $(el).attr('href') ?? '';
+      qualities.push({ quality, url });
+    });
+
+    return { qualities, episode };
+  }
 
   private getDownloadURL(htmlData: string) {
     var regex = /<a href="(.+?)" .+?>Redirect me<\/a>/;
@@ -220,8 +264,6 @@ export class AnimepaheProvider extends BaseProviderV2 {
     quality: string,
     numberOfEpisodes: number
   ) {
-    const spinner = this.getSpinner();
-
     for (let i = 0; i < this.options.episodes.length; i++) {
       let retrying = false;
       let qualities;
@@ -229,10 +271,11 @@ export class AnimepaheProvider extends BaseProviderV2 {
 
       const episode = this.options.episodes[i];
 
-      spinner.text = `Searching for ${chalk.yellow(
-        media.title
-      )} episode ${chalk.yellow(episode)} download link`;
-      spinner.start();
+      const spinner = await this.getSpinner(
+        `Searching for ${chalk.yellow(media.title)} episode ${chalk.yellow(
+          episode
+        )} download link`
+      );
 
       const { qualities: _ress } = await this.getPaheDownloadPage(
         media,
@@ -242,14 +285,13 @@ export class AnimepaheProvider extends BaseProviderV2 {
 
       qualities = _ress;
 
-      //////
       //Check for expired sessions, if expired re-run without using caches i'e fecthes
       if (qualities?.length == 0) {
-        const { qualities_, anime_, choosen_, numberOfEpisodes_ } =
+        const { qualities_, media_, choosen_, numberOfEpisodes_ } =
           await this.retryFetch(media, quality, episode, retrying);
 
         qualities = qualities_;
-        media = anime_;
+        media = media_;
         choosen = choosen_;
         retrying = true;
         numberOfEpisodes = numberOfEpisodes_;
@@ -295,11 +337,9 @@ export class AnimepaheProvider extends BaseProviderV2 {
     let qualities;
     let choosen;
 
-    const spinner = this.getSpinner();
-
-    spinner.text = `Searching for ${chalk.yellow(
-      media.title
-    )} movie download link`;
+    const spinner = await this.getSpinner(
+      `Searching for ${chalk.yellow(media.title)} movie download link`
+    );
 
     const { qualities: _ress } = await this.getPaheDownloadPage(
       media,
@@ -311,11 +351,11 @@ export class AnimepaheProvider extends BaseProviderV2 {
 
     //Check for expired sessions, if expired re-run without using caches i.e fecthes
     if (qualities?.length == 0) {
-      const { qualities_, anime_, choosen_, numberOfEpisodes_ } =
+      const { qualities_, media_, choosen_, numberOfEpisodes_ } =
         await this.retryFetch(media, quality, '1', retrying);
 
       qualities = qualities_;
-      media = anime_;
+      media = media_;
       choosen = choosen_;
       retrying = true;
       numberOfEpisodes = numberOfEpisodes_;
@@ -343,32 +383,35 @@ export class AnimepaheProvider extends BaseProviderV2 {
       media,
       url: choosen.url,
       type: 'Movie',
-      name: media.title.toString(),
+      name: media.title ?? '',
     });
   }
 
   private async retryFetch(
-    anime: IAnimeResult,
+    _media: IAnimeResult,
     _quality: string,
     _episode: any,
     _retrying: boolean
   ) {
     const medias: IAnimeResult[] = await this.fetchAnime();
-    const anime_ = _.find(medias, (o: IAnimeResult) => o.title == anime.title);
+    const media_ = _.find(medias, (o: IAnimeResult) => o.title == _media.title);
 
     const { numberOfEpisodes: numberOfEpisodes_ } = await this.fetchAnimeInfo(
-      anime_
+      media_,
+      `Retrying search for '${media_?.title}' ${
+        _media.type == 'TV' ? 'episodes' : ''
+      }`
     );
 
     const { qualities: qualities_ } = await this.getPaheDownloadPage(
-      anime,
+      media_,
       _episode,
       _retrying
     );
 
     const choosen_ = this.getChoosenRes(parseInt(_quality), qualities_);
 
-    return { anime_, choosen_, qualities_, numberOfEpisodes_ };
+    return { media_, choosen_, qualities_, numberOfEpisodes_ };
   }
 
   private async handleMediaDownload({
@@ -426,12 +469,11 @@ export class AnimepaheProvider extends BaseProviderV2 {
       }
     );
 
+    //
+
     const _url = res.headers.location;
 
-    const spinner = this.getSpinner();
-    spinner.text = searchText;
-
-    spinner.start();
+    const spinner = await this.getSpinner(searchText);
 
     try {
       spinner.stop();
@@ -440,251 +482,9 @@ export class AnimepaheProvider extends BaseProviderV2 {
 
       const folder = type == 'TV' ? media.title : undefined;
 
-      //  await this.download(_url, name, folder);
+      await this.download(_url, name, folder);
     } catch (error) {
       console.log(chalk.red('An error occured, please try again!'));
-    }
-  }
-
-  getChoosenRes(
-    preferedRes: number,
-    qualities: { quality: string; url: string }[]
-  ): { quality: string; url: string } {
-    let choosen: any = {};
-
-    for (let i = 0; i < qualities.length; i++) {
-      const el = parseInt(qualities[i].quality);
-      if (el >= preferedRes) {
-        choosen = qualities[i];
-        break;
-      }
-      if (qualities.length == i + 1) {
-        choosen = qualities[i];
-      }
-    }
-
-    return choosen;
-  }
-
-  /*  async download(url: string, fileName: string, folder: string = './') {
-    const ratio = process.stdout.columns <= 56 ? 0.2 : 0.25;
-    const bar = new cliProgress.SingleBar(
-      {
-        format:
-          '{percentage}% [' +
-          chalk.green(`{bar}`) +
-          ']' +
-          chalk.blue(' {downloaded}/{size}') +
-          chalk.yellow(' {duration_formatted} ') +
-          chalk.hex('#28B5C0')('{speed}/s'),
-        hideCursor: true,
-        barsize: 20,
-        forceRedraw: true,
-      },
-      cliProgress.Presets.legacy
-    );
-
-    IO.createFolderIfNotFound(`${IO.sanitizeFolderName(folder)}`);
-    const dl = new DownloaderHelper(url, `${IO.sanitizeFolderName(folder)}`, {
-      fileName: { name: fileName },
-      override: true,
-    });
-
-    const size = await dl.getTotalSize();
-
-    bar.start(100);
-
-    dl.on('error', (err) => {
-      bar.stop();
-      console.log('Download Failed', err);
-    });
-
-    dl.on('progress', ({ speed, progress, downloaded }) => {
-      bar.update(Math.ceil(progress), {
-        speed: humanFileSize(speed),
-        downloaded: humanFileSize(downloaded),
-        size: humanFileSize(size.total ?? 0),
-      });
-    });
-
-    dl.on('end', () => {
-      bar.stop();
-      console.log(chalk.greenBright.bold(`Download complete \u2713 `)); //
-    });
-
-    await dl.start().catch((err) => {
-      console.error(err);
-      bar.stop();
-    });
-  } */
-
-  async getPaheDownloadPage(
-    animeInfo: IAnimeResult,
-    _episode: string,
-    retrying: boolean
-  ) {
-    const linksPath = this.getLinksPath({ animeInfo });
-    const linksString = readFileSync(linksPath).toString();
-    const links: ILink = JSON.parse(linksString);
-
-    const episode: IEpisode = _.find(
-      links.links,
-      (o: IEpisode) => o.episode == _episode
-    );
-
-    if (!episode) {
-      return { qualities: [], episode: null };
-    }
-
-    let html = '';
-    try {
-      const res = await axios(
-        `https://animepahe.ru/play/${animeInfo.session}/${episode.session}`,
-        {
-          method: 'GET',
-        }
-      );
-
-      html = await res.data;
-    } catch (error) {
-      if (this.options.debug) {
-        console.log(error);
-      }
-    }
-
-    const $ = cheerio.load(html);
-
-    const qualities: { quality: string; url: string }[] = [];
-    $('#pickDownload > a').each((i, el) => {
-      let quality = $(el).text();
-      const regex = /(\d+)p/;
-      const match = quality.match(regex);
-      quality = match ? match[1] : '720';
-      const url = $(el).attr('href') ?? '';
-      qualities.push({ quality, url });
-    });
-
-    return { qualities, episode };
-  }
-
-  async handle(animeInfo: IAnimeInfo) {
-    for (let i = 0; i < this.options.episodes.length; i++) {
-      let choosen;
-      let retrying = false;
-
-      let sources: ISource | null;
-      let type: 'TV' | 'TV/Movie' | '' = '';
-      const episode = this.options.episodes[i];
-      const spinner = this.getSpinner();
-
-      if (animeInfo.episodes && animeInfo.episodes.length > 1) {
-        type = 'TV';
-      } else if (
-        (animeInfo.episodes && animeInfo.type == MediaFormat.MOVIE) ||
-        animeInfo.episodes?.length == 1
-      ) {
-        type = 'TV/Movie';
-      }
-
-      if (type === 'TV') {
-        spinner.text = `Searching for ${chalk.yellow(
-          animeInfo.title
-        )} episode ${chalk.yellow(episode)} download link`;
-        spinner.start();
-
-        //Will be get downloadPahe page
-        sources = await this.getEpisodeSources({
-          _animeInfo: animeInfo,
-          _episode: episode,
-        });
-      } else {
-        spinner.text = `Searching for ${chalk.yellow(
-          animeInfo.title
-        )} movie or episode download link`;
-        spinner.start();
-
-        sources = await this.getEpisodeSources({
-          _animeInfo: animeInfo,
-          _episode: 1,
-        });
-      }
-    }
-  }
-
-  async handleDownload(animeInfo: IAnimeInfo, quality: string): Promise<void> {
-    const spinner = this.getSpinner();
-    let type: 'TV' | 'TV/Movie' | '' = '';
-    if (animeInfo.episodes && animeInfo.episodes.length > 1) {
-      type = 'TV';
-    } else if (
-      (animeInfo.episodes && animeInfo.type == MediaFormat.MOVIE) ||
-      animeInfo.episodes?.length == 1
-    ) {
-      type = 'TV/Movie';
-    }
-
-    for (let i = 0; i < this.options.episodes.length; i++) {
-      let choosen;
-      let sources: ISource | null;
-      let retrying = false;
-      let qualities;
-      let numberOfEpisodes = 0;
-
-      const episode = this.options.episodes[i];
-
-      if (type === 'TV') {
-        spinner.text = `Searching for ${chalk.yellow(
-          animeInfo.title
-        )} episode ${chalk.yellow(episode)} download link`;
-        spinner.start();
-
-        const { qualities: _ress } = await this.getPaheDownloadPage(
-          animeInfo,
-          episode,
-          retrying
-        );
-        qualities = _ress;
-      } else {
-        console.log('movie n');
-
-        spinner.text = `Searching for ${chalk.yellow(
-          animeInfo.title
-        )} movie or episode download link`;
-        spinner.start();
-        const { qualities: _ress } = await this.getPaheDownloadPage(
-          animeInfo,
-          '1',
-          retrying
-        );
-        qualities = _ress;
-      }
-      spinner.stop();
-
-      //Check for expired sessions, if expired re-run without using caches i'e fecthes
-      if (qualities?.length == 0) {
-        const { qualities_, anime_, choosen_, numberOfEpisodes_ } =
-          await this.retryFetch(animeInfo, quality, episode, retrying);
-
-        qualities = qualities_;
-        animeInfo = anime_;
-        choosen = choosen_;
-        retrying = true;
-        numberOfEpisodes = animeInfo.episodes?.length ?? 0;
-      }
-
-      //console.log(qualities, 'quaaaaaa');
-      //if after retried and episode is still greater than number of episode
-      if (retrying && episode > numberOfEpisodes) {
-        console.log(
-          chalk.red(`\nCould not find episode ${episode}, please try again!`)
-        );
-        console.log(
-          chalk.yellow(
-            'Episode might not be available yet or an unknown error occured!'
-          )
-        );
-        break;
-      }
     }
   }
 }

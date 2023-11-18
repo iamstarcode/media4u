@@ -14,12 +14,10 @@ import fs from 'node:fs';
 import ora, { Ora } from 'ora';
 import _ from 'lodash';
 
-import inquirer from 'inquirer';
-import inquirerSearchList from 'inquirer-search-list';
 import chalk from 'chalk';
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
-import { IO } from '@iamstarcode/4u-lib';
+import { IO, CLI } from '@iamstarcode/4u-lib';
 
 export class BaseProvider {
   options: OptionsType;
@@ -47,19 +45,19 @@ export class BaseProvider {
   async run() {
     let medias: IAnimeResult[] = await this.getAnime();
 
-    let media: IAnimeResult = await this.inquireMedia(medias);
+    let media: IAnimeResult = await CLI.inquireMedia(medias);
 
     let quality;
 
     if (!this.options.quality) {
-      quality = await this.inquireQuality();
+      quality = await CLI.inquireQuality();
     } else {
       quality = this.options.quality;
     }
 
     const animeInfo = await this.getAnimeInfo(media);
 
-    await this.handleDownload(animeInfo, quality);
+    await this.handleDownload(animeInfo, quality.toString());
 
     process.exit(0);
   }
@@ -186,55 +184,6 @@ export class BaseProvider {
     return this.spinner;
   }
 
-  async inquireMedia(medias: IAnimeResult[]) {
-    inquirer.registerPrompt('search-list', inquirerSearchList);
-    const inq: IAnimeResult = await inquirer
-      .prompt([
-        {
-          type: 'search-list',
-          message: 'Select a Movie or TV show',
-          name: 'title',
-          askAnswered: true,
-          choices: medias.map((s: IAnimeResult) => ({
-            name: `${s.title}`,
-            value: s.title,
-          })),
-        },
-      ])
-      .then(function (answers: { title: string }) {
-        const mediaInfo: IAnimeResult = _.find(
-          medias,
-          (o: IAnimeResult) => o.title == answers.title
-        );
-        return mediaInfo;
-      })
-      .catch((e: any) => console.log(e));
-    return inq;
-  }
-
-  async inquireQuality() {
-    const ui = new inquirer.ui.BottomBar();
-    const qualityRes = ['360', '480', '720', '800', '1080', '2160'];
-    const inq = await inquirer
-      .prompt([
-        {
-          type: 'list',
-          message: 'Select a prefered quality',
-          name: 'quality',
-          choices: qualityRes.map((s) => ({
-            name: `${s}p`,
-            value: s,
-          })),
-        },
-      ])
-      .then(function (answer: { quality: string }) {
-        return answer.quality;
-      })
-      .catch((e: any) => console.log(e));
-
-    return inq;
-  }
-
   getChoosenQuality(
     sources: IVideo[] | null,
     preferedRes: number
@@ -294,33 +243,27 @@ export class BaseProvider {
   async handleDownload(animeInfo: IAnimeInfo, quality: string) {
     const spinner = this.getSpinner();
 
+    let type: 'TV' | 'TV/Movie' | '' = '';
+    if (animeInfo.episodes && animeInfo.episodes.length > 1) {
+      type = 'TV';
+    } else if (
+      (animeInfo.episodes && animeInfo.type == MediaFormat.MOVIE) ||
+      animeInfo.episodes?.length == 1
+    ) {
+      type = 'TV/Movie';
+    }
+
     for (let i = 0; i < this.options.episodes.length; i++) {
       let choosen;
       let sources: ISource | null;
 
-      let type: 'TV' | 'TV/Movie' | '' = '';
       const episode = this.options.episodes[i];
-
-      if (animeInfo.episodes && animeInfo.episodes.length > 1) {
-        type = 'TV';
-      } else if (
-        (animeInfo.episodes && animeInfo.type == MediaFormat.MOVIE) ||
-        animeInfo.episodes?.length == 1
-      ) {
-        type = 'TV/Movie';
-      }
 
       if (type === 'TV') {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
         )} episode ${chalk.yellow(episode)} download link`;
         spinner.start();
-
-        /*   spinner = this.getSpinner(
-          `Searching for ${chalk.yellow(
-            animeInfo.title
-          )} episode ${chalk.yellow(episode)} download link`
-        ); */
 
         sources = await this.getEpisodeSources({
           _animeInfo: animeInfo,
@@ -331,11 +274,6 @@ export class BaseProvider {
           animeInfo.title
         )} movie or episode download link`;
         spinner.start();
-        /*   spinner = this.getSpinner(
-          `Searching for ${chalk.yellow(
-            animeInfo.title
-          )} movie or episode download link`
-        ); */
 
         sources = await this.getEpisodeSources({
           _animeInfo: animeInfo,
@@ -343,7 +281,6 @@ export class BaseProvider {
         });
       }
 
-      //spinner.stop();
       spinner.stop();
 
       if (sources == null && type == 'TV') {
