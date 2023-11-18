@@ -17,14 +17,9 @@ import _ from 'lodash';
 import inquirer from 'inquirer';
 import inquirerSearchList from 'inquirer-search-list';
 import chalk from 'chalk';
-import {
-  createFileIfNotFound,
-  createFolderIfNotFound,
-  sanitizeFileName,
-  sanitizeFolderName,
-} from '../helpers/io/index.js';
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
+import { IO } from '@iamstarcode/4u-lib';
 
 export class BaseProvider {
   options: OptionsType;
@@ -123,7 +118,7 @@ export class BaseProvider {
       console.log(chalk.red(`No anime found \u2715 `));
       return [];
     } else {
-      createFileIfNotFound(
+      IO.createFileIfNotFound(
         this.searchPath,
         `${this.query}.json`,
         JSON.stringify(medias)
@@ -171,7 +166,7 @@ export class BaseProvider {
       process.exit(1);
     } else {
       console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
-      createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
+      IO.createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
     }
 
     return data;
@@ -397,7 +392,9 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    createFolderIfNotFound(`${sanitizeFolderName(animeInfo.title.toString())}`);
+    IO.createFolderIfNotFound(
+      `${IO.sanitizeFolderName(animeInfo.title.toString())}`
+    );
     console.log(
       `Now downloading: ${chalk.yellow(animeInfo.title)} Episode ${chalk.yellow(
         episode
@@ -436,7 +433,7 @@ export class BaseProvider {
     console.log(`Now downloading: ${chalk.yellow(animeInfo.title)}`);
     await m3u8Download(choosen.url, {
       showProgress: true,
-      filename: sanitizeFileName(result),
+      filename: IO.sanitizeFileName(result),
       delCache: true,
       cacheDir: path.join(homedir(), 'anim4u', this._provider, 'cache'),
       headers: sources.headers,

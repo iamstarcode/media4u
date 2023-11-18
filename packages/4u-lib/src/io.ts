@@ -1,5 +1,14 @@
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 import fs from 'fs';
 import path from 'path';
+
+export function fileDirName(meta: any) {
+  const __filename = fileURLToPath(meta.url);
+  const __dirname = dirname(__filename);
+  return { __dirname, __filename };
+}
 
 export const createFileIfNotFound = (
   folder: string,
@@ -28,8 +37,6 @@ export const createFolderIfNotFound = (folder: string) => {
 export const sanitizeName = (folderName: string) => {
   const forbiddenChars = /[\/:*?"<>|]/g;
   const safeReplacements: any = {
-    //'/': '_',
-    //'\\': '_',
     ':': '-',
     '*': '-',
     '?': '-',
@@ -39,8 +46,6 @@ export const sanitizeName = (folderName: string) => {
     '|': '-',
   };
 
-  //
-  // Replace forbidden characters with safe alternatives
   folderName = folderName.replace(
     forbiddenChars,
     (match: string | number) => safeReplacements[match] || ''

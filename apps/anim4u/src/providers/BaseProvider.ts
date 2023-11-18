@@ -1,11 +1,8 @@
 import chalk from 'chalk';
 import { DownloaderHelper } from 'node-downloader-helper';
-import {
-  createFolderIfNotFound,
-  sanitizeFileName,
-  sanitizeFolderName,
-  sanitizeName,
-} from '../helpers/io/index.js';
+
+import { IO } from '@iamstarcode/4u-lib';
+
 import { IMedia, OptionsType, ILink } from '../types/index.js';
 import cliProgress from 'cli-progress';
 import { humanFileSize } from '../utils/human-file-szie.js';
@@ -59,32 +56,6 @@ export abstract class BaseProvider implements IBase {
 
   run() {}
 
-  public async inquireMedia(medias: IMedia[]) {
-    inquirer.registerPrompt('search-list', inquirerSearchList);
-    const inq: IMedia = await inquirer
-      .prompt([
-        {
-          type: 'search-list',
-          message: 'Select a Movie or TV show',
-          name: 'title',
-          askAnswered: true,
-          choices: medias.map((s: IMedia) => ({
-            name: `${s.title}`,
-            value: s.title,
-          })),
-        },
-      ])
-      .then(function (answers: { title: string }) {
-        const mediaInfo: IMedia = _.find(
-          medias,
-          (o: IMedia) => o.title == answers.title
-        );
-        return mediaInfo;
-      })
-      .catch((e: any) => console.log(e));
-    return inq;
-  }
-
   public async inquireQuality() {
     const ui = new inquirer.ui.BottomBar();
     const qualityRes = ['360', '480', '720', '800', '1080', '2160'];
@@ -126,8 +97,8 @@ export abstract class BaseProvider implements IBase {
       cliProgress.Presets.legacy
     );
 
-    createFolderIfNotFound(`${sanitizeFolderName(folder)}`);
-    const dl = new DownloaderHelper(url, `${sanitizeFolderName(folder)}`, {
+    IO.createFolderIfNotFound(`${IO.sanitizeFolderName(folder)}`);
+    const dl = new DownloaderHelper(url, `${IO.sanitizeFolderName(folder)}`, {
       fileName: { name: fileName },
       override: true,
     });
@@ -163,7 +134,7 @@ export abstract class BaseProvider implements IBase {
   getLinksPath(mediaInfo: IMedia) {
     const linksPath = path.join(
       this.searchPath ?? '',
-      sanitizeFileName(mediaInfo?.title ?? ''),
+      IO.sanitizeFileName(mediaInfo?.title ?? ''),
       `links.json`
     );
 
@@ -199,12 +170,12 @@ export abstract class BaseProvider implements IBase {
   ): Promise<{ type?: string; numberOfEpisodes: number }> {
     const mediaPath = path.join(
       this.searchPath ?? '',
-      sanitizeFolderName(media?.title ?? '')
+      IO.sanitizeFolderName(media?.title ?? '')
     );
 
     const linksPath = path.join(
       this.searchPath ?? '',
-      sanitizeFolderName(media?.title ?? ''),
+      IO.sanitizeFolderName(media?.title ?? ''),
       `links.json`
     );
 
@@ -247,7 +218,7 @@ export abstract class BaseProvider implements IBase {
   ): Promise<IMedia[]> {
     const queryFile = path.join(
       this.searchPath ?? '',
-      `${sanitizeFileName(this.query)}.json`
+      `${IO.sanitizeFileName(this.query)}.json`
     );
 
     if (this.options.force) {

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { handleIfNewVersion } from '@iamstarcode/4u-lib';
+import { CLI } from '@iamstarcode/4u-lib';
 
 (async () => {
   const program = new Command();
   const version = '0.1.8';
 
-  handleIfNewVersion(version, 'anim4u');
+  CLI.handleIfNewVersion(version, 'anim4u');
 
   program
     .name('cli')

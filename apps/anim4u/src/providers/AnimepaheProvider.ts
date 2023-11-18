@@ -5,11 +5,7 @@ import { IMedia, ILink } from '../types/index.js';
 import { BaseProvider, IBaseProvider } from './BaseProvider.js';
 import * as cheerio from 'cheerio';
 
-import {
-  createFileIfNotFound,
-  sanitizeFileName,
-  sanitizeFolderName,
-} from '../helpers/io/index.js';
+import { IO, CLI } from '@iamstarcode/4u-lib';
 
 import _ from 'lodash';
 
@@ -46,7 +42,9 @@ export class AnimepaheProvider extends BaseProvider {
 
   override async run(): Promise<void> {
     let medias: IMedia[] = await this.getAnime(this.fetchAnime);
-    let media: IMedia = await this.inquireMedia(medias);
+
+    let media: IMedia = await await CLI.inquireMedia(medias);
+
     let quality;
 
     if (!this.options.quality) {
@@ -95,9 +93,9 @@ export class AnimepaheProvider extends BaseProvider {
       console.log(chalk.red(`No anime found \u2715 \n`));
       return [];
     } else {
-      createFileIfNotFound(
+      IO.createFileIfNotFound(
         this.searchPath ?? '',
-        `${sanitizeFileName(this.query)}.json`,
+        `${IO.sanitizeFileName(this.query)}.json`,
         JSON.stringify(medias)
       );
       return medias;
@@ -110,7 +108,7 @@ export class AnimepaheProvider extends BaseProvider {
   ): Promise<{ type: string; numberOfEpisodes: number }> => {
     const mediaPath = path.join(
       this.searchPath ?? '',
-      sanitizeFolderName(media?.title ?? '')
+      IO.sanitizeFolderName(media?.title ?? '')
     );
 
     const spinner = await this.getSpinner(searchText);
@@ -156,7 +154,7 @@ export class AnimepaheProvider extends BaseProvider {
       spinner.stop();
 
       console.log(chalk.yellow(media.title) + ' info search complete \u2713');
-      createFileIfNotFound(
+      IO.createFileIfNotFound(
         mediaPath ?? '',
         `links.json`,
         JSON.stringify(links)

@@ -1,17 +1,12 @@
-import {
-  createFileIfNotFound,
-  createFolderIfNotFound,
-  sanitizeFileName,
-  sanitizeFolderName,
-  sanitizeName,
-} from '../helpers/io/index.js';
+import { IO } from '@iamstarcode/4u-lib';
 
 (async () => {
   const originalFileName = 'my/file:name?<>|example';
 
-  createFileIfNotFound(
-    sanitizeFolderName('fff?/:f'),
-    sanitizeFileName('Dr. Stones-Stone Wars.json'),
+  //
+  IO.createFileIfNotFound(
+    IO.sanitizeFolderName('fff?/:f'),
+    IO.sanitizeFileName('Dr. Stones-Stone Wars.json'),
     'nthntjhntjh'
   );
 })();

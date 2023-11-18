@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import _ from 'lodash';
+import autocomplete from 'inquirer-autocomplete-standalone';
 
 export const checkFormat = (episodes: any) => {
   for (let i = 0; i < episodes.selectedEpisodes; i++) {
@@ -89,4 +90,25 @@ export const handleIfNewVersion = async (version: string, pkgName: string) => {
     console.log('New version available: ', chalk.green(latestVersion));
     console.log('Version installed: ', chalk.red(version));
   }
+};
+
+export const inquireMedia = async (medias: any[]) => {
+  const answer = await autocomplete({
+    message: 'Select a Movie or TV show ?',
+    source: async (input) => {
+      const filteredMedia = _.filter(medias, (item: { title: string }) =>
+        item.title
+          .toLocaleLowerCase()
+          .includes(input?.toLocaleLowerCase() ?? '')
+      );
+      return filteredMedia.map((media: { title: string }) => {
+        return {
+          value: media.title,
+        };
+      });
+    },
+  });
+
+  const mediaInfo = _.find(medias, (o: { title: string }) => o.title == answer);
+  return mediaInfo;
 };
