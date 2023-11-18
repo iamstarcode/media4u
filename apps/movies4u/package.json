@@ -32,7 +32,6 @@
     "@types/lodash": "^4.14.200",
     "@types/node": "^20.2.5",
     "@types/tough-cookie": "^4.0.2",
-    "release-it": "^15.10.3",
     "ts-node": "^10.9.1",
     "tsc-watch": "^6.0.4",
     "typescript": "^5.0.4"
