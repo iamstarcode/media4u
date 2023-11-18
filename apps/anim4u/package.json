@@ -38,13 +38,10 @@
     "tsconfig": "workspace:*"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.5",
-    "@commitlint/config-conventional": "^17.6.5",
     "@types/inquirer": "^9",
     "@types/lodash": "^4.14.201",
     "@types/node": "^20.2.5",
     "@types/tough-cookie": "^4.0.2",
-    "husky": "^8.0.0",
     "release-it": "^15.10.3",
     "ts-node": "^10.9.1",
     "tsc-watch": "^6.0.4",
