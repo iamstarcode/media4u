@@ -24,6 +24,11 @@ export interface IGetMediType {
   type?: string;
   media: IAnimeResult;
 }
+
+export interface IGetEpisodeSources {
+  animeInfo: IAnimeInfo;
+  episode: number;
+}
 export class BaseProvider {
   options: OptionsType;
   query: string;
@@ -219,31 +224,42 @@ export class BaseProvider {
   }
 
   async getEpisodeSources({
-    _animeInfo,
-    _episode,
-  }: {
-    _animeInfo: IAnimeInfo;
-    _episode: number;
-  }): Promise<ISource | null> {
-    const linksPath = this.getLinksPath({ title: _animeInfo.title });
+    animeInfo,
+    episode,
+  }: IGetEpisodeSources): Promise<ISource | null> {
+    const linksPath = this.getLinksPath({ title: animeInfo.title });
 
     const linksString = readFileSync(linksPath).toString();
-    const animeInfo: IAnimeInfo = JSON.parse(linksString);
+    const _animeInfo: IAnimeInfo = JSON.parse(linksString);
 
-    const episode: IAnimeEpisode = _.find(
+    const _episode: IAnimeEpisode = _.find(
       animeInfo.episodes,
-      (o: IAnimeEpisode) => o.number == _episode
+      (o: IAnimeEpisode) => o.number == episode
     );
 
-    if (!episode) {
+    if (!_episode) {
       return null;
     }
 
     let data: ISource;
 
-    data = await this.provider.fetchEpisodeSources(episode.id);
+    data = await this.provider.fetchEpisodeSources(_episode.id);
 
     return data;
+  }
+
+  //By default search Animeinfo
+  //But Others that uses session like Animepahe should overide this and get AnimeResult first
+  //Before Anime Info
+  async retryGetEpisodeSources({ animeInfo, episode }: IGetEpisodeSources) {
+    //silenlty refresh cache
+    const _animeInfo = await this.fetchAnimeInfo(animeInfo);
+    const source = await this.getEpisodeSources({
+      animeInfo: _animeInfo,
+      episode,
+    });
+
+    return source;
   }
 
   async handleDownload({
@@ -257,53 +273,64 @@ export class BaseProvider {
   }) {
     const spinner = this.getSpinner();
 
-    /*  let type: 'TV' | 'TV/Movie' | '' = '';
-    if (animeInfo.episodes && animeInfo.episodes.length > 1) {
-      type = 'TV';
-    } else if (
-      (animeInfo.episodes && animeInfo.type == MediaFormat.MOVIE) ||
-      animeInfo.episodes?.length == 1
-    ) {
-      type = 'TV/Movie';
-    } */
-
     for (let i = 0; i < this.options.episodes.length; i++) {
       let choosen;
-      let sources: ISource | null;
+      let source: ISource | null;
+      let retrying = false;
+      let numberOfEpisodes = animeInfo.episodes?.length ?? 0;
 
       const episode = this.options.episodes[i];
 
-      if (type === 'TV') {
+      if (type === MediaFormat.TV) {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
         )} episode ${chalk.yellow(episode)} download link`;
         spinner.start();
-
-        sources = await this.getEpisodeSources({
-          _animeInfo: animeInfo,
-          _episode: episode,
-        });
       } else {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
-        )} movie or episode download link`;
+        )} movie download link`;
         spinner.start();
-
-        sources = await this.getEpisodeSources({
-          _animeInfo: animeInfo,
-          _episode: 1,
-        });
       }
+
+      source = await this.getEpisodeSources({
+        animeInfo,
+        episode,
+      });
 
       spinner.stop();
 
-      if (sources == null && type == 'TV') {
+      //for movies exit earlier
+      if (episode > 1 && type == MediaFormat.MOVIE) {
+        break;
+      }
+
+      //Check for expired sessions, if expired re-run without using caches i'e fecthes
+      //Or just do a retry
+      if (source?.sources?.length == 0) {
+        const source = await this.retryGetEpisodeSources({
+          animeInfo,
+          episode,
+        });
+
+        retrying = true;
+        numberOfEpisodes = animeInfo.episodes?.length ?? 0;
+      }
+
+      if (type == MediaFormat.MOVIE) {
+        console.log(chalk.yellow('Movie link search \u2713'));
+      } else {
+        console.log(
+          'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
+        );
+      }
+
+      if (source == null && type == MediaFormat.TV) {
         console.log(
           chalk.red(
             `Could not find episode ${chalk.yellow(episode)}, please try again!`
           )
         );
-
         if (
           animeInfo.episodes != undefined &&
           episode > animeInfo.episodes.length
@@ -314,24 +341,19 @@ export class BaseProvider {
             )}`
           );
         }
-
-        console.log(
-          'Episode might not be available yet, or try forcing a refresh the -f flag!'
-        );
+        console.log('Episode might not be available yet!');
 
         break;
-      } else if (sources == null && type != 'TV') {
-        console.log(
-          chalk.red(`Could not find movie or episode 1, please try again!`)
-        );
-      } else if (sources != null) {
-        choosen = this.getChoosenQuality(sources.sources, parseInt(quality));
+      } else if (source == null && type == MediaFormat.MOVIE) {
+        console.log(chalk.red(`Could not find movie, please try again!`));
+      } else if (source != null) {
+        choosen = this.getChoosenQuality(source.sources, parseInt(quality));
 
-        if (type != 'TV') {
-          await this.saveAsMovie(animeInfo, 1, choosen, sources);
+        if (type == MediaFormat.TV) {
+          await this.saveAsMovie(animeInfo, 1, choosen, source);
         }
-        if (type == 'TV') {
-          await this.saveAsSeries(animeInfo, episode, choosen, sources);
+        if (type == MediaFormat.TV) {
+          await this.saveAsSeries(animeInfo, episode, choosen, source);
         }
       }
     }

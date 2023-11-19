@@ -3,7 +3,7 @@ import { homedir, type } from 'node:os';
 import path from 'node:path';
 //import { IAnimeResult, ILink } from '../types/index.js';
 //import { BaseProvider, IBaseProvider } from './BaseProvider.js';
-import { BaseProvider } from './BaseProviderV2.js';
+import { BaseProvider, IGetEpisodeSources } from './BaseProviderV2.js';
 import * as cheerio from 'cheerio';
 
 import { IO, CLI } from '@iamstarcode/4u-lib';
@@ -24,6 +24,7 @@ import {
   IAnimeResult,
   ISource,
   ITitle,
+  IVideo,
   MediaFormat,
   TvType,
 } from '@consumet/extensions';
@@ -54,6 +55,59 @@ export class AnimepaheProvider extends BaseProvider {
       searchPath: path.join(homedir(), 'anim4u', 'animepahe', 'Searches'),
       _provider: 'animepahe',
     });
+  }
+
+  async getEpisodeSources({
+    animeInfo,
+    episode,
+  }: IGetEpisodeSources): Promise<ISource | null> {
+    const linksPath = this.getLinksPath({ title: animeInfo.title.toString() });
+    const linksString = readFileSync(linksPath).toString();
+    const animeInfo_: IAnimeInfo = JSON.parse(linksString);
+
+    const _episode: IAnimeEpisode = _.find(
+      animeInfo_.episodes,
+      (o: IAnimeEpisode) => o.number == episode
+    );
+
+    if (!episode) {
+      return null;
+    }
+
+    let data: ISource = { sources: [] };
+    let html = '';
+    try {
+      const res = await axios(
+        `https://animepahe.ru/play/${_episode.id.split('/')[0]}/${
+          _episode.id.split('/')[1]
+        }`,
+        {
+          method: 'GET',
+        }
+      );
+
+      html = await res.data;
+    } catch (error) {
+      if (this.options.debug) {
+        console.log(error);
+      }
+    }
+
+    const $ = cheerio.load(html);
+
+    const qualities: IVideo[] = [];
+    $('#pickDownload > a').each((i, el) => {
+      let quality = $(el).text();
+      const regex = /(\d+)p/;
+      const match = quality.match(regex);
+      quality = match ? match[1] : '720';
+      const url = $(el).attr('href') ?? '';
+      qualities.push({ quality, url });
+    });
+
+    data.sources = qualities;
+
+    return data;
   }
 
   private getDownloadURL(htmlData: string) {
@@ -92,7 +146,7 @@ export class AnimepaheProvider extends BaseProvider {
   }
 
   private async downloadSeries(
-    media: IAnimeResult,
+    animeInfo: IAnimeInfo,
     quality: string,
     numberOfEpisodes: number
   ) {
@@ -106,12 +160,12 @@ export class AnimepaheProvider extends BaseProvider {
       const episode = this.options.episodes[i];
 
       spinner.text = `Searching for ${chalk.yellow(
-        media.title
+        animeInfo.title
       )} episode ${chalk.yellow(episode)} download link`;
       spinner.start();
 
       const { qualities: _ress } = await this.getPaheDownloadPage(
-        media,
+        animeInfo,
         episode,
         retrying
       );
@@ -121,17 +175,13 @@ export class AnimepaheProvider extends BaseProvider {
       //////
       //Check for expired sessions, if expired re-run without using caches i'e fecthes
       if (qualities?.length == 0) {
-        const { qualities_, anime_, numberOfEpisodes_ } = await this.retryFetch(
-          media,
-          quality,
+        const sources = await this.retryGetEpisodeSources({
+          animeInfo,
           episode,
-          retrying
-        );
+        });
 
-        qualities = qualities_;
-        media = anime_;
         retrying = true;
-        numberOfEpisodes = numberOfEpisodes_;
+        //  numberOfEpisodes = numberOfEpisodes_;
       }
 
       //
@@ -166,7 +216,7 @@ export class AnimepaheProvider extends BaseProvider {
   }
 
   private async downloadMovie(
-    media: IAnimeResult,
+    media: IAnimeInfo,
     quality: string,
     numberOfEpisodes: number
   ) {
@@ -187,14 +237,11 @@ export class AnimepaheProvider extends BaseProvider {
     );
 
     qualities = _ress;
-
+    /* 
     //Check for expired sessions, if expired re-run without using caches i.e fecthes
     if (qualities?.length == 0) {
-      const { qualities_, anime_, numberOfEpisodes_ } = await this.retryFetch(
-        media,
-        quality,
-        '1',
-        retrying
+      const sources = await this.retryGetEpisodeSources(
+  {animeInfo,, episode}
       );
 
       qualities = qualities_;
@@ -217,7 +264,7 @@ export class AnimepaheProvider extends BaseProvider {
     spinner.stop();
     console.log(`${chalk.yellow(media.title)} link search complete \u2713`);
 
-    choosen = this.getChoosenRes(parseInt(quality), qualities ?? []);
+    choosen = this.getChoosenRes(parseInt(quality), qualities ?? []); */
 
     /*    await this.handleMediaDownload({
       media,
@@ -227,13 +274,11 @@ export class AnimepaheProvider extends BaseProvider {
     }); */
   }
 
-  private async retryFetch(
-    anime: IAnimeResult,
-    _quality: string,
-    _episode: any,
-    _retrying: boolean
-  ) {
-    //silenlty refresh cache
+  async retryGetEpisodeSources({
+    animeInfo,
+    episode,
+  }: IGetEpisodeSources): Promise<ISource | null> {
+    //silenlty refresh cache from AnimeResult too
     const medias: IAnimeResult[] = [];
     let page = 1;
     let hasNextPage: boolean;
@@ -255,19 +300,19 @@ export class AnimepaheProvider extends BaseProvider {
       JSON.stringify(medias)
     );
 
-    const anime_ = _.find(medias, (o: IAnimeResult) => o.title == anime.title);
-
-    const { numberOfEpisodes: numberOfEpisodes_ } = await this.fetchAnimeInfo(
-      anime_
+    const anime_ = _.find(
+      medias,
+      (o: IAnimeResult) => o.title == animeInfo.title
     );
 
-    const { qualities: qualities_ } = await this.getPaheDownloadPage(
-      anime,
-      _episode,
-      _retrying
-    );
+    const _animeInfo = await this.fetchAnimeInfo(anime_);
 
-    return { anime_, qualities_, numberOfEpisodes_ };
+    const sources = await this.getEpisodeSources({
+      animeInfo: _animeInfo,
+      episode,
+    });
+
+    return sources;
   }
 
   private async handleMediaDownload({
@@ -468,7 +513,7 @@ export class AnimepaheProvider extends BaseProvider {
     return { qualities, episode };
   }
 
-  async handleDownload({
+  /*   async handleDownload({
     animeInfo,
     quality,
     type,
@@ -481,14 +526,14 @@ export class AnimepaheProvider extends BaseProvider {
 
     for (let i = 0; i < this.options.episodes.length; i++) {
       let choosen;
-      let sources: ISource | null;
+      let source: ISource | null;
       let retrying = false;
       let qualities;
       let numberOfEpisodes = animeInfo.episodes?.length ?? 0;
 
       const episode = this.options.episodes[i];
 
-      if (type === 'TV') {
+      if (type === MediaFormat.TV) {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
         )} episode ${chalk.yellow(episode)} download link`;
@@ -500,13 +545,14 @@ export class AnimepaheProvider extends BaseProvider {
         spinner.start();
       }
 
-      const { qualities: _ress } = await this.getPaheDownloadPage(
+
+
+      source = await this.getEpisodeSources({
         animeInfo,
         episode,
-        retrying
-      );
+      });
 
-      qualities = _ress;
+
 
       spinner.stop();
 
@@ -514,44 +560,42 @@ export class AnimepaheProvider extends BaseProvider {
         //for movies exit earlier
         break;
       }
-      //Check for expired sessions, if expired re-run without using caches i'e fecthes
-      if (qualities?.length == 0) {
-        const { qualities_, anime_ } = await this.retryFetch(
-          animeInfo,
-          quality,
-          episode,
-          retrying
-        );
 
-        qualities = qualities_;
-        animeInfo = anime_;
+      //Check for expired sessions, if expired re-run without using caches i'e fecthes
+      if (source?.sources?.length == 0) {
+         source = await this.retryGetEpisodeSources({
+          animeInfo,
+          episode,
+        });
+      
         retrying = true;
         numberOfEpisodes = animeInfo.episodes?.length ?? 0;
       }
 
       //if after retrying and episode is still greater than number of episode
       if (retrying || episode > numberOfEpisodes) {
-        //TODO to add for also movie eg This could be a movie log
-        console.log(
-          chalk.red(`\nCould not find episode ${episode}, please try again!`)
-        );
-        console.log(
-          chalk.yellow(
-            'Episode might not be available yet or an unknown error occured!'
-          )
-        );
-
+        if (type == MediaFormat.MOVIE) {
+          console.log(chalk.yellow('Could not find Movie, please try again!!'));
+        } else {
+          console.log(
+            chalk.red(`\nCould not find episode ${episode}, please try again!`)
+          );
+        }
         break;
       }
-
       spinner.stop();
 
-      console.log(
-        'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
-      );
+      if (type == MediaFormat.MOVIE) {
+        console.log(chalk.yellow('Movie link search \u2713'));
+      } else {
+        console.log(
+          'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
+        );
+      }
 
+      //TODO USE PREVIOUS FORMAT i.e BASEV2
       choosen = this.getChoosenRes(parseInt(quality), qualities ?? []);
-
+      console.log(choosen, 'nfvnhvnfvhh');
       await this.handleMediaDownload({
         animeInfo,
         type,
@@ -559,5 +603,5 @@ export class AnimepaheProvider extends BaseProvider {
         url: choosen.url,
       });
     }
-  }
+  } */
 }
