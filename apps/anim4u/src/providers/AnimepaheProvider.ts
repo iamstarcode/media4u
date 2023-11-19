@@ -56,131 +56,6 @@ export class AnimepaheProvider extends BaseProvider {
     });
   }
 
-  /*   async run() {
-    let medias: IAnimeResult[] = await this.getAnime();
-
-    let media: IAnimeResult = await CLI.inquireMedia(medias);
-
-    let quality: number;
-
-    if (!this.options.quality) {
-      quality = await CLI.inquireQuality();
-    } else {
-      quality = this.options.quality;
-    }
-
-    console.log('heremmm..xx.');
-
-    const animeInfo: IAnimeInfo = await this.getAnimeInfo(media);
-
-    await this.handleDownload(animeInfo, quality.toString());
-
-    process.exit(0);
-  }
- */
-  /*   async fetchAnime(): Promise<IAnimeResult[]> {
-    const searchText = `Searching ${chalk.yellow(this.query)} from ${chalk.hex(
-      '#d5015b'
-    )('Animepahe')} `;
-    const spinner = this.getSpinner();
-    spinner.text = searchText;
-
-    const res = await axios.get(
-      `https://animepahe.ru/api?m=search&q=${encodeURIComponent(this.query)}`,
-      {
-        method: 'GET',
-      }
-    );
-
-    const data = await res.data;
-
-    const medias: IAnimeResult[] = data.data;
-
-    spinner.stop();
-    console.log(chalk.green(`Anime search complete \u2713`));
-
-    if (medias == undefined || medias.length < 0) {
-      console.log(chalk.red(`No anime found \u2715 \n`));
-      return [];
-    } else {
-      IO.createFileIfNotFound(
-        this.searchPath ?? '',
-        `${IO.sanitizeFileName(this.query)}.json`,
-        JSON.stringify(medias)
-      );
-      return medias;
-    }
-  } */
-
-  /*   private async fetchAnimeInfo(
-    media: IAnimeResult,
-    searchText: string
-  ): Promise<IAnimeInfo> {
-    const mediaPath = path.join(
-      this.searchPath ?? '',
-      IO.sanitizeFolderName(media?.title ?? '')
-    );
-
-    const spinner = await this.getSpinner(searchText);
-
-    const res = await axios(
-      `https://animepahe.com/api?m=release&sort=episode_asc&id=${media?.session}`,
-      {
-        method: 'GET',
-      }
-    );
-
-    const { last_page, data } = await res.data;
-
-    const type = media.type;
-
-    let links: any = {};
-
-    if (!data) {
-      spinner.stop();
-      console.log(chalk.yellow(`No episodes found, may not be aired yet!`));
-      process.exit(1);
-    } else {
-      links.type = type;
-      links.title = media.title;
-
-      const allLinks: any[] = [];
-      allLinks.push(...data);
-
-      for (let i = 2; i <= last_page; i++) {
-        const res = await axios(
-          `https://animepahe.com/api?m=release&sort=episode_asc&id=${media?.session}&page=${i}`,
-          {
-            method: 'GET',
-          }
-        );
-
-        const { data } = await res.data;
-        allLinks.push(...data);
-      }
-
-      links.links = allLinks;
-
-      spinner.stop();
-
-      console.log(chalk.yellow(media.title) + ' info search complete \u2713');
-      IO.createFileIfNotFound(
-        mediaPath ?? '',
-        `links.json`,
-        JSON.stringify(links)
-      );
-
-      return {
-        id: links.id,
-        title: links.title,
-        type: links.type,
-      };
-
-      //  return { type: links.type, numberOfEpisodes: allLinks.length };
-    }
-  }
- */
-
   private getDownloadURL(htmlData: string) {
     var regex = /<a href="(.+?)" .+?>Redirect me<\/a>/;
     const match = htmlData.match(regex);
@@ -339,8 +214,6 @@ export class AnimepaheProvider extends BaseProvider {
 
       process.exit(0);
     }
-
-    //
     spinner.stop();
     console.log(`${chalk.yellow(media.title)} link search complete \u2713`);
 
@@ -360,6 +233,7 @@ export class AnimepaheProvider extends BaseProvider {
     _episode: any,
     _retrying: boolean
   ) {
+    //silenlty refresh cache
     const medias: IAnimeResult[] = [];
     let page = 1;
     let hasNextPage: boolean;
@@ -393,8 +267,6 @@ export class AnimepaheProvider extends BaseProvider {
       _retrying
     );
 
-    // const choosen_ = this.getChoosenRes(parseInt(_quality), qualities_);
-
     return { anime_, qualities_, numberOfEpisodes_ };
   }
 
@@ -406,7 +278,7 @@ export class AnimepaheProvider extends BaseProvider {
   }: {
     animeInfo: IAnimeInfo;
     url: string;
-    type: 'TV' | 'TV/Movie' | '';
+    type: MediaFormat;
     name: string;
   }) {
     let searchText = '';
@@ -420,7 +292,7 @@ export class AnimepaheProvider extends BaseProvider {
         animeInfo.title
       )} Episode ${chalk.yellow(name)} `;
       fileName = `E${name}`;
-    } else if (type == 'TV/Movie') {
+    } else if (type != MediaFormat.MOVIE) {
       searchText = `Searching for ${chalk.yellow(animeInfo.title)} movie link`;
       nowDownloadinText = `Now downloading: ${chalk.yellow(animeInfo.title)}`;
       fileName = name;
@@ -550,7 +422,7 @@ export class AnimepaheProvider extends BaseProvider {
     _episode: string,
     retrying: boolean
   ) {
-    const linksPath = this.getLinksPath({ animeInfo });
+    const linksPath = this.getLinksPath({ title: animeInfo.title.toString() });
     const linksString = readFileSync(linksPath).toString();
     const animeInfo_: IAnimeInfo = JSON.parse(linksString);
 
@@ -596,19 +468,17 @@ export class AnimepaheProvider extends BaseProvider {
     return { qualities, episode };
   }
 
-  async handleDownload(animeInfo: IAnimeInfo, quality: string) {
+  async handleDownload({
+    animeInfo,
+    quality,
+    type,
+  }: {
+    animeInfo: IAnimeInfo;
+    quality: string;
+    type: MediaFormat;
+  }) {
     const spinner = this.getSpinner();
-    let type: 'TV' | 'TV/Movie' | '' = '';
-    if (animeInfo.episodes && animeInfo.episodes.length > 1) {
-      type = 'TV';
-    } else if (
-      (animeInfo.episodes && animeInfo.type == MediaFormat.MOVIE) ||
-      animeInfo.episodes?.length == 1
-    ) {
-      type = 'TV/Movie';
-    }
 
-    console.log(animeInfo, 'hhhhdh');
     for (let i = 0; i < this.options.episodes.length; i++) {
       let choosen;
       let sources: ISource | null;
@@ -626,7 +496,7 @@ export class AnimepaheProvider extends BaseProvider {
       } else {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
-        )} movie or episode download link`;
+        )} movie download link`;
         spinner.start();
       }
 
@@ -640,6 +510,10 @@ export class AnimepaheProvider extends BaseProvider {
 
       spinner.stop();
 
+      if (episode > 1 && type == MediaFormat.MOVIE) {
+        //for movies exit earlier
+        break;
+      }
       //Check for expired sessions, if expired re-run without using caches i'e fecthes
       if (qualities?.length == 0) {
         const { qualities_, anime_ } = await this.retryFetch(
@@ -666,6 +540,7 @@ export class AnimepaheProvider extends BaseProvider {
             'Episode might not be available yet or an unknown error occured!'
           )
         );
+
         break;
       }
 

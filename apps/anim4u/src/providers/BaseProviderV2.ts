@@ -3,6 +3,7 @@ import {
   IAnimeInfo,
   IAnimeResult,
   ISource,
+  ITitle,
   IVideo,
   MediaFormat,
 } from '@consumet/extensions';
@@ -19,6 +20,10 @@ import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
 import { IO, CLI } from '@iamstarcode/4u-lib';
 
+export interface IGetMediType {
+  type?: string;
+  media: IAnimeResult;
+}
 export class BaseProvider {
   options: OptionsType;
   query: string;
@@ -55,8 +60,11 @@ export class BaseProvider {
     }
 
     const animeInfo = await this.getAnimeInfo(media);
-
-    await this.handleDownload(animeInfo, quality.toString());
+    const type = await this.getMediaType({
+      type: media.type?.toString(),
+      media,
+    });
+    await this.handleDownload({ animeInfo, quality: quality.toString(), type });
 
     process.exit(0);
   }
@@ -168,10 +176,10 @@ export class BaseProvider {
     return data;
   }
 
-  getLinksPath({ animeInfo }: { animeInfo: IAnimeInfo }) {
+  getLinksPath({ title }: { title: string | ITitle }) {
     const linksPath = path.join(
       this.searchPath,
-      animeInfo?.title.toString(),
+      title.toString(),
       `links.json`
     );
 
@@ -217,7 +225,7 @@ export class BaseProvider {
     _animeInfo: IAnimeInfo;
     _episode: number;
   }): Promise<ISource | null> {
-    const linksPath = this.getLinksPath({ animeInfo: _animeInfo });
+    const linksPath = this.getLinksPath({ title: _animeInfo.title });
 
     const linksString = readFileSync(linksPath).toString();
     const animeInfo: IAnimeInfo = JSON.parse(linksString);
@@ -238,10 +246,18 @@ export class BaseProvider {
     return data;
   }
 
-  async handleDownload(animeInfo: IAnimeInfo, quality: string) {
+  async handleDownload({
+    animeInfo,
+    quality,
+    type,
+  }: {
+    animeInfo: IAnimeInfo;
+    quality: string;
+    type: MediaFormat;
+  }) {
     const spinner = this.getSpinner();
 
-    let type: 'TV' | 'TV/Movie' | '' = '';
+    /*  let type: 'TV' | 'TV/Movie' | '' = '';
     if (animeInfo.episodes && animeInfo.episodes.length > 1) {
       type = 'TV';
     } else if (
@@ -249,7 +265,7 @@ export class BaseProvider {
       animeInfo.episodes?.length == 1
     ) {
       type = 'TV/Movie';
-    }
+    } */
 
     for (let i = 0; i < this.options.episodes.length; i++) {
       let choosen;
@@ -304,14 +320,14 @@ export class BaseProvider {
         );
 
         break;
-      } else if (sources == null && type == 'TV/Movie') {
+      } else if (sources == null && type != 'TV') {
         console.log(
           chalk.red(`Could not find movie or episode 1, please try again!`)
         );
       } else if (sources != null) {
         choosen = this.getChoosenQuality(sources.sources, parseInt(quality));
 
-        if (type == 'TV/Movie') {
+        if (type != 'TV') {
           await this.saveAsMovie(animeInfo, 1, choosen, sources);
         }
         if (type == 'TV') {
@@ -393,5 +409,11 @@ export class BaseProvider {
     } catch (err) {
       console.error('Error reading folder:', err);
     }
+  }
+
+  async getMediaType({ type }: IGetMediType) {
+    if (type?.toLocaleLowerCase().includes('movie')) {
+      return MediaFormat.MOVIE;
+    } else return MediaFormat.TV;
   }
 }
