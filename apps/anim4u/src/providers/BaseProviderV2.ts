@@ -29,6 +29,14 @@ export interface IGetEpisodeSources {
   animeInfo: IAnimeInfo;
   episode: number;
 }
+
+export interface IHandleMediaDownload {
+  animeInfo: IAnimeInfo;
+  type: MediaFormat;
+  choosen: any;
+  episode: never;
+  source: ISource;
+}
 export class BaseProvider {
   options: OptionsType;
   query: string;
@@ -284,13 +292,19 @@ export class BaseProvider {
       if (type === MediaFormat.TV) {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
-        )} episode ${chalk.yellow(episode)} download link`;
+        )} Episode ${chalk.yellow(episode)} download link`;
         spinner.start();
       } else {
         spinner.text = `Searching for ${chalk.yellow(
           animeInfo.title
-        )} movie download link`;
+        )} Movie download link`;
         spinner.start();
+      }
+
+      //for movies exit earlier
+      if (episode > 1 && type == MediaFormat.MOVIE) {
+        spinner.stop();
+        break;
       }
 
       source = await this.getEpisodeSources({
@@ -299,11 +313,6 @@ export class BaseProvider {
       });
 
       spinner.stop();
-
-      //for movies exit earlier
-      if (episode > 1 && type == MediaFormat.MOVIE) {
-        break;
-      }
 
       //Check for expired sessions, if expired re-run without using caches i'e fecthes
       //Or just do a retry
@@ -318,7 +327,7 @@ export class BaseProvider {
       }
 
       if (type == MediaFormat.MOVIE) {
-        console.log(chalk.yellow('Movie link search \u2713'));
+        console.log(chalk.yellow('Movie link search complete \u2713'));
       } else {
         console.log(
           'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
@@ -349,13 +358,29 @@ export class BaseProvider {
       } else if (source != null) {
         choosen = this.getChoosenQuality(source.sources, parseInt(quality));
 
-        if (type == MediaFormat.TV) {
-          await this.saveAsMovie(animeInfo, 1, choosen, source);
-        }
-        if (type == MediaFormat.TV) {
-          await this.saveAsSeries(animeInfo, episode, choosen, source);
-        }
+        await this.handleMediaDownload({
+          animeInfo,
+          episode,
+          choosen,
+          type,
+          source,
+        });
       }
+    }
+  }
+
+  async handleMediaDownload({
+    animeInfo,
+    choosen,
+    type,
+    episode,
+    source,
+  }: IHandleMediaDownload) {
+    if (type == MediaFormat.TV) {
+      await this.saveAsMovie(animeInfo, 1, choosen, source);
+    }
+    if (type == MediaFormat.TV) {
+      await this.saveAsSeries(animeInfo, episode, choosen, source);
     }
   }
 
@@ -381,10 +406,11 @@ export class BaseProvider {
       filename: `E${episode}`,
       saveDir: dir,
       cacheDir,
+      delCache: true,
       headers: sources.headers,
     });
 
-    this.clearDownloadCache(cacheDir, episode);
+    //this.clearDownloadCache(cacheDir, episode);
   }
 
   async saveAsMovie(
@@ -400,13 +426,11 @@ export class BaseProvider {
     console.log(`${chalk.yellow(animeInfo.title)} link search complete \u2713`);
 
     const name: string = animeInfo.title.toString();
-    const regex = new RegExp(' ', 'g');
-    const result = name.replace(regex, '-');
 
     console.log(`Now downloading: ${chalk.yellow(animeInfo.title)}`);
     await m3u8Download(choosen.url, {
       showProgress: true,
-      filename: IO.sanitizeFileName(result),
+      filename: IO.sanitizeFileName(name),
       delCache: true,
       cacheDir: path.join(homedir(), 'anim4u', this._provider, 'cache'),
       headers: sources.headers,
