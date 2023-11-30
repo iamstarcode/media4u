@@ -73,6 +73,7 @@ export class BaseProvider {
     }
 
     const animeInfo = await this.getAnimeInfo(media);
+
     const type = await this.getMediaType({
       type: media.type?.toString(),
       media,
@@ -376,10 +377,9 @@ export class BaseProvider {
     episode,
     source,
   }: IHandleMediaDownload) {
-    if (type == MediaFormat.TV) {
+    if (type == MediaFormat.MOVIE) {
       await this.saveAsMovie(animeInfo, 1, choosen, source);
-    }
-    if (type == MediaFormat.TV) {
+    } else {
       await this.saveAsSeries(animeInfo, episode, choosen, source);
     }
   }
@@ -404,9 +404,9 @@ export class BaseProvider {
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: `E${episode}`,
-      saveDir: dir,
-      cacheDir,
-      delCache: true,
+      saveDir: IO.sanitizeFolderName(dir),
+      //cacheDir,
+      //delCache: true,
       headers: sources.headers,
     });
 
@@ -419,10 +419,6 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    console.log(
-      'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
-    );
-
     console.log(`${chalk.yellow(animeInfo.title)} link search complete \u2713`);
 
     const name: string = animeInfo.title.toString();
@@ -431,7 +427,7 @@ export class BaseProvider {
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: IO.sanitizeFileName(name),
-      delCache: true,
+      delCache: false,
       cacheDir: path.join(homedir(), 'anim4u', this._provider, 'cache'),
       headers: sources.headers,
     });

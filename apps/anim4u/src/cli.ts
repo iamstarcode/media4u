@@ -4,7 +4,7 @@ import { CLI } from '@iamstarcode/4u-lib';
 
 (async () => {
   const program = new Command();
-  const version = '0.1.8';
+  const version = '0.0.9';
 
   CLI.handleIfNewVersion(version, 'anim4u');
 
