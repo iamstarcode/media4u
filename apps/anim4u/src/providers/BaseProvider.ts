@@ -1,214 +1,491 @@
-import chalk from 'chalk';
-import { DownloaderHelper } from 'node-downloader-helper';
-
-import { IO } from '@iamstarcode/4u-lib';
-
-import { IAnimeResult, OptionsType, ILink } from '../types/index.js';
-import cliProgress from 'cli-progress';
-import { humanFileSize } from '../utils/human-file-szie.js';
+import {
+  IAnimeEpisode,
+  IAnimeInfo,
+  IAnimeResult,
+  ISource,
+  ITitle,
+  IVideo,
+  MediaFormat,
+} from '@consumet/extensions';
+import { readFileSync } from 'fs';
 import path from 'path';
+import { IBaseProvider, ISupportedProvider, OptionsType } from '../types';
+import fs from 'node:fs';
 
-import fs, { readFileSync } from 'node:fs';
-
+import ora, { Ora } from 'ora';
 import _ from 'lodash';
-import ora from 'ora';
-import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime.js';
-import { IAnimeInfo } from '@consumet/extensions';
 
-export interface IBaseProvider {
-  baseUrl?: string;
-  provider?: string | Gogoanime;
-  searchPath?: string;
-  searchURL?: string | null;
-  options: OptionsType;
-  query: string;
+import chalk from 'chalk';
+import { m3u8Download } from '@lzwme/m3u8-dl';
+import { homedir } from 'node:os';
+import { IO, CLI } from '@iamstarcode/4u-lib';
+
+import * as readline from 'readline';
+
+export interface IGetMediType {
+  type?: string;
+  media: IAnimeResult;
 }
 
-export type IBase = {
-  run: () => void;
-};
+export interface IGetEpisodeSources {
+  animeInfo: IAnimeInfo;
+  episode: number;
+}
 
-export abstract class BaseProvider implements IBase {
-  baseUrl;
-  searchURL;
-  provider;
-  searchPath;
+export interface IHandleMediaDownload {
+  animeInfo: IAnimeInfo;
+  type: MediaFormat;
+  choosen: any;
+  episode: never;
+  source: ISource;
+}
+export class BaseProvider {
   options: OptionsType;
-  query;
+  query: string;
+  provider: ISupportedProvider;
+  searchPath: string;
+  _provider: string;
+  spinner: Ora;
 
   constructor({
-    baseUrl,
-    provider,
-    searchPath,
     options,
     query,
-    searchURL = null,
-  }: IBaseProvider & { options: OptionsType }) {
-    this.baseUrl = baseUrl;
-    this.provider = provider;
-    this.searchPath = searchPath;
+    provider,
+    searchPath,
+    _provider,
+  }: IBaseProvider) {
     this.options = options;
     this.query = query;
-    this.searchURL = searchURL;
+    this.provider = provider;
+    this.searchPath = searchPath;
+    this._provider = _provider;
+    this.spinner = ora({ spinner: 'dots12' });
   }
 
-  run() {}
+  async run() {
+    let medias: IAnimeResult[] = await this.getAnime();
+    let media: IAnimeResult = await CLI.inquireMedia(medias);
 
-  async download(url: string, fileName: string, folder: string = './') {
-    const ratio = process.stdout.columns <= 56 ? 0.2 : 0.25;
-    const bar = new cliProgress.SingleBar(
-      {
-        format:
-          '{percentage}% [' +
-          chalk.green(`{bar}`) +
-          ']' +
-          chalk.blue(' {downloaded}/{size}') +
-          chalk.yellow(' {duration_formatted} ') +
-          chalk.hex('#28B5C0')('{speed}/s'),
-        hideCursor: true,
-        barsize: 20,
-        forceRedraw: true,
-      },
-      cliProgress.Presets.legacy
+    let quality;
+
+    if (!this.options.quality) {
+      quality = await CLI.inquireQuality();
+    } else {
+      quality = this.options.quality;
+    }
+
+    const animeInfo = await this.getAnimeInfo(media);
+
+    const type = await this.getMediaType({
+      type: media.type?.toString(),
+      media,
+    });
+    await this.handleDownload({ animeInfo, quality: quality.toString(), type });
+
+    process.exit(0);
+  }
+
+  async getAnime(): Promise<IAnimeResult[]> {
+    if (this.options.force) {
+      return await this.fetchAnime();
+    } else {
+      if (!fs.existsSync(path.join(this.searchPath, `${this.query}.json`))) {
+        return await this.fetchAnime();
+      }
+      const seasonsString = readFileSync(
+        path.join(this.searchPath, `${this.query}.json`)
+      ).toString();
+      return JSON.parse(seasonsString);
+    }
+  }
+
+  async fetchAnime(): Promise<IAnimeResult[]> {
+    const spinner = this.getSpinner();
+    let providerColor;
+    if (this._provider == 'animepahe2' || this._provider == 'animepahe') {
+      providerColor = chalk.hex('#d5015b')('Animepahe');
+    } else if (this._provider == 'gogoanime') {
+      providerColor = chalk.greenBright(this.provider.name);
+    } else {
+      providerColor = chalk.yellow(this.provider.name);
+    }
+
+    const searchText = `Searching ${chalk.yellow(
+      this.query
+    )} from ${providerColor} `;
+
+    spinner.text = searchText;
+    spinner.start();
+    const medias: IAnimeResult[] = [];
+    let page = 1;
+    let hasNextPage: boolean;
+
+    do {
+      const data = await this.provider.search(this.query, page);
+      if (data.hasNextPage) {
+        hasNextPage = true;
+        page++;
+      } else {
+        hasNextPage = false;
+      }
+      medias.push(...data.results);
+    } while (hasNextPage);
+
+    spinner.stop();
+    console.log(chalk.green(`Anime search complete \u2713`));
+
+    if (medias == undefined || medias.length < 0) {
+      console.log(chalk.red(`No anime found \u2715 `));
+      return [];
+    } else {
+      IO.createFileIfNotFound(
+        this.searchPath,
+        `${this.query}.json`,
+        JSON.stringify(medias)
+      );
+      return medias;
+    }
+  }
+
+  async getAnimeInfo(animeResult: IAnimeResult): Promise<IAnimeInfo> {
+    const mediaPath = path.join(this.searchPath, animeResult.title.toString());
+    const linksPath = path.join(
+      this.searchPath,
+      animeResult.title.toString(),
+      `links.json`
     );
 
-    IO.createFolderIfNotFound(`${IO.sanitizeFolderName(folder)}`);
-    const dl = new DownloaderHelper(url, `${IO.sanitizeFolderName(folder)}`, {
-      fileName: { name: fileName },
-      override: true,
-    });
+    if (this.options.force) {
+      const data = await this.fetchAnimeInfo(animeResult);
+      return data;
+    } else {
+      if (!fs.existsSync(path.join(mediaPath, 'links.json'))) {
+        const data = await this.fetchAnimeInfo(animeResult);
 
-    const size = await dl.getTotalSize();
-
-    bar.start(100);
-
-    dl.on('error', (err) => {
-      bar.stop();
-      console.log('Download Failed', err);
-    });
-
-    dl.on('progress', ({ speed, progress, downloaded }) => {
-      bar.update(Math.ceil(progress), {
-        speed: humanFileSize(speed),
-        downloaded: humanFileSize(downloaded),
-        size: humanFileSize(size.total ?? 0),
-      });
-    });
-
-    dl.on('end', () => {
-      bar.stop();
-      console.log(chalk.greenBright.bold(`Download complete \u2713 `)); //
-    });
-
-    await dl.start().catch((err) => {
-      console.error(err);
-      bar.stop();
-    });
+        return data;
+      } else {
+        const linksString = readFileSync(linksPath).toString();
+        const animeInfo: IAnimeInfo = JSON.parse(linksString);
+        return animeInfo;
+      }
+    }
   }
 
-  getLinksPath(mediaInfo: IAnimeResult) {
+  async fetchAnimeInfo(anime: IAnimeResult): Promise<IAnimeInfo> {
+    const spinner = this.getSpinner();
+    const mediaPath = path.join(this.searchPath, anime.title.toString());
+
+    spinner.text = `Searching ${chalk.yellow(anime.title.toString())} info`;
+    spinner.start();
+
+    const data: IAnimeInfo = await this.provider.fetchAnimeInfo(anime.id);
+    spinner.stop();
+
+    if (!data) {
+      console.log(chalk.yellow(`No episodes found, may not be aired yet!`));
+      process.exit(1);
+    } else {
+      console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
+      IO.createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
+    }
+
+    return data;
+  }
+
+  getLinksPath({ title }: { title: string | ITitle }) {
     const linksPath = path.join(
-      this.searchPath ?? '',
-      IO.sanitizeFileName(mediaInfo?.title ?? ''),
+      this.searchPath,
+      title.toString(),
       `links.json`
     );
 
     return linksPath;
   }
 
-  getChoosenRes(
-    preferedRes: number,
-    qualities: { quality: string; url: string }[]
+  getSpinner() {
+    return this.spinner;
+  }
+
+  getChoosenQuality(
+    sources: IVideo[] | null,
+    preferedRes: number
   ): { quality: string; url: string } {
     let choosen: any = {};
 
-    for (let i = 0; i < qualities.length; i++) {
-      const el = parseInt(qualities[i].quality);
-      if (el >= preferedRes) {
-        choosen = qualities[i];
-        break;
-      }
-      if (qualities.length == i + 1) {
-        choosen = qualities[i];
+    const qualityRes = ['360', '480', '720', '800', '1080', '2160'];
+
+    if (sources != null) {
+      for (let i = 0; i < sources.length; i++) {
+        const regexPattern = new RegExp(`(${qualityRes.join('|')})`);
+        const match = sources[i].quality?.match(regexPattern);
+
+        if (match) {
+          const el = parseInt(match[1] ?? '');
+          if (el >= preferedRes) {
+            choosen = sources[i];
+            break;
+          }
+          if (sources.length == i + 1) {
+            choosen = sources[i];
+          }
+        }
       }
     }
-
     return choosen;
   }
 
-  async getAnimeInfo(
-    media: IAnimeResult,
-    callback: (_media: IAnimeResult, searchText: string) => Promise<IAnimeInfo>
-  ): Promise<{ type?: string; numberOfEpisodes: number }> {
-    const mediaPath = path.join(
-      this.searchPath ?? '',
-      IO.sanitizeFolderName(media?.title ?? '')
+  async getEpisodeSources({
+    animeInfo,
+    episode,
+  }: IGetEpisodeSources): Promise<ISource | null> {
+    const linksPath = this.getLinksPath({ title: animeInfo.title });
+
+    const linksString = readFileSync(linksPath).toString();
+    const _animeInfo: IAnimeInfo = JSON.parse(linksString);
+
+    const _episode: IAnimeEpisode = _.find(
+      animeInfo.episodes,
+      (o: IAnimeEpisode) => o.number == episode
     );
 
-    const linksPath = path.join(
-      this.searchPath ?? '',
-      IO.sanitizeFolderName(media?.title ?? ''),
-      `links.json`
-    );
+    if (!_episode) {
+      return null;
+    }
 
-    let numberOfEpisodes_;
-    let type_;
+    let data: ISource;
 
-    if (this.options.force) {
-      const { numberOfEpisodes, type } = await callback(
-        media,
-        `Searching ${chalk.yellow(media?.title)} info`
-      );
+    data = await this.provider.fetchEpisodeSources(_episode.id);
 
-      numberOfEpisodes_ = numberOfEpisodes;
-      type_ = type;
-    } else {
-      if (!fs.existsSync(path.join(mediaPath, 'links.json'))) {
-        const { numberOfEpisodes, type } = await callback(
-          media,
-          `Searching ${chalk.yellow(media?.title)} info`
+    return data;
+  }
+
+  //By default search Animeinfo
+  //But Others that uses session like Animepahe should overide this and get AnimeResult first
+  //Before Anime Info
+  async retryGetEpisodeSources({ animeInfo, episode }: IGetEpisodeSources) {
+    //silenlty refresh cache
+    const _animeInfo = await this.fetchAnimeInfo(animeInfo);
+    const source = await this.getEpisodeSources({
+      animeInfo: _animeInfo,
+      episode,
+    });
+
+    return source;
+  }
+
+  async handleDownload({
+    animeInfo,
+    quality,
+    type,
+  }: {
+    animeInfo: IAnimeInfo;
+    quality: string;
+    type: MediaFormat;
+  }) {
+    const spinner = this.getSpinner();
+
+    for (let i = 0; i < this.options.episodes.length; i++) {
+      let choosen;
+      let source: ISource | null;
+      let retrying = false;
+      let numberOfEpisodes = animeInfo.episodes?.length ?? 0;
+
+      const episode = this.options.episodes[i];
+
+      if (type === MediaFormat.TV) {
+        spinner.text = `Searching for ${chalk.yellow(
+          animeInfo.title
+        )} Episode ${chalk.yellow(episode)} download link`;
+        spinner.start();
+      } else {
+        spinner.text = `Searching for ${chalk.yellow(
+          animeInfo.title
+        )} Movie download link`;
+        spinner.start();
+      }
+
+      //for movies exit earlier
+      if (episode > 1 && type == MediaFormat.MOVIE) {
+        spinner.stop();
+        break;
+      }
+
+      source = await this.getEpisodeSources({
+        animeInfo,
+        episode,
+      });
+
+      spinner.stop();
+
+      //Check for expired sessions, if expired re-run without using caches i'e fecthes
+      //Or just do a retry
+      if (source?.sources?.length == 0) {
+        const source = await this.retryGetEpisodeSources({
+          animeInfo,
+          episode,
+        });
+
+        retrying = true;
+        numberOfEpisodes = animeInfo.episodes?.length ?? 0;
+      }
+
+      if (type == MediaFormat.MOVIE) {
+        console.log(chalk.yellow('Movie link search complete \u2713'));
+      } else {
+        console.log(
+          'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
         );
+      }
 
-        numberOfEpisodes_ = numberOfEpisodes;
-        type_ = type;
-      } else {
-        const linksString = readFileSync(linksPath).toString();
-        const media: ILink = JSON.parse(linksString);
-        const numberOfEpisodes = media.links.length;
-        const type = media.type;
+      if (source == null && type == MediaFormat.TV) {
+        console.log(
+          chalk.red(
+            `Could not find episode ${chalk.yellow(episode)}, please try again!`
+          )
+        );
+        if (
+          animeInfo.episodes != undefined &&
+          episode > animeInfo.episodes.length
+        ) {
+          console.log(
+            `Total available episode is ${chalk.yellow(
+              animeInfo.episodes.length
+            )}`
+          );
+        }
+        console.log('Episode might not be available yet!');
 
-        numberOfEpisodes_ = numberOfEpisodes;
-        type_ = type;
+        break;
+      } else if (source == null && type == MediaFormat.MOVIE) {
+        console.log(chalk.red(`Could not find movie, please try again!`));
+      } else if (source != null) {
+        choosen = this.getChoosenQuality(source.sources, parseInt(quality));
+
+        await this.handleMediaDownload({
+          animeInfo,
+          episode,
+          choosen,
+          type,
+          source,
+        });
       }
     }
-
-    return { type: type_, numberOfEpisodes: numberOfEpisodes_ };
   }
 
-  async getAnime(
-    callback: (_query: string) => Promise<IAnimeResult[]>
-  ): Promise<IAnimeResult[]> {
-    const queryFile = path.join(
-      this.searchPath ?? '',
-      `${IO.sanitizeFileName(this.query)}.json`
+  async handleMediaDownload({
+    animeInfo,
+    choosen,
+    type,
+    episode,
+    source,
+  }: IHandleMediaDownload) {
+    if (type == MediaFormat.MOVIE) {
+      await this.saveAsMovie(animeInfo, 1, choosen, source);
+    } else {
+      await this.saveAsSeries(animeInfo, episode, choosen, source);
+    }
+  }
+
+  async saveAsSeries(
+    animeInfo: IAnimeInfo,
+    episode: number,
+    choosen: IVideo,
+    sources: ISource
+  ) {
+    const folder = IO.sanitizeFolderName(animeInfo.title.toString());
+    IO.createFolderIfNotFound(folder);
+
+    console.log(
+      `Now downloading: ${chalk.yellow(animeInfo.title)} Episode ${chalk.yellow(
+        episode
+      )} `
     );
 
-    if (this.options.force) {
-      return await callback(this.query);
-    } else {
-      if (!fs.existsSync(queryFile)) {
-        console.log('does not exits');
-        return await callback(this.query);
-      } else {
-        const seasonsString = readFileSync(queryFile).toString();
-        return JSON.parse(seasonsString);
+    const cacheDir = path.join(
+      homedir(),
+      'anim4u',
+      this._provider,
+      'cache',
+      folder,
+      '' + episode
+    );
+
+    IO.createFolderIfNotFound(cacheDir);
+
+    console.log('linked');
+
+    await m3u8Download(choosen.url, {
+      showProgress: true,
+      filename: `E${episode}`,
+      saveDir: folder,
+      delCache: true,
+      headers: sources.headers,
+    });
+
+    //
+    // await this.clearDownloadCache();
+  }
+
+  async saveAsMovie(
+    animeInfo: IAnimeInfo,
+    episode: number,
+    choosen: IVideo,
+    sources: ISource
+  ) {
+    console.log(`${chalk.yellow(animeInfo.title)} link search complete \u2713`);
+
+    const name: string = animeInfo.title.toString();
+
+    console.log(`Now downloading: ${chalk.yellow(animeInfo.title)}`);
+    await m3u8Download(choosen.url, {
+      showProgress: true,
+      filename: IO.sanitizeFileName(name),
+      delCache: false,
+      cacheDir: path.join(homedir(), 'anim4u', this._provider, 'cache'),
+      headers: sources.headers,
+    });
+  }
+
+  async clearDownloadCache() {
+    const inputFile = path.join(
+      homedir(),
+      'anim4u',
+      this._provider,
+      'cache',
+      'input.txt'
+    );
+
+    const fileStream = fs.createReadStream(inputFile);
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity,
+    });
+
+    for await (const line of rl) {
+      if (line.startsWith('file')) {
+        const filePath = line.substring('file '.length).trim();
+        const absolutePath = path.resolve(filePath);
+        this.processFileDeletion(absolutePath);
       }
     }
   }
 
-  async getSpinner(text: string) {
-    const spinner = ora({ text, spinner: 'dots12' });
-    spinner.start();
-    return spinner;
+  processFileDeletion(filePath: string) {
+    try {
+      fs.unlinkSync(filePath);
+
+      console.log(`Deleted file: ${filePath}`);
+    } catch (error: any) {
+      if (this.options.debug)
+        console.error(`Error deleting file ${filePath}: ${error.message}`);
+    }
+  }
+
+  ///////
+
+  async getMediaType({ type }: IGetMediType) {
+    if (type?.toLocaleLowerCase().includes('movie')) {
+      return MediaFormat.MOVIE;
+    } else return MediaFormat.TV;
   }
 }

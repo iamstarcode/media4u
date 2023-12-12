@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { IAnimeResult, ILink } from '../types/index.js';
-import { BaseProvider, IBaseProvider } from './BaseProvider.js';
-import { BaseProvider as BaseProviderV2 } from './BaseProviderV2.js';
+import { BaseProvider, IBaseProvider } from './BaseProviderX.js';
+import { BaseProvider as BaseProviderV2 } from './BaseProvider.js';
 import * as cheerio from 'cheerio';
 
 import { IO, CLI } from '@iamstarcode/4u-lib';

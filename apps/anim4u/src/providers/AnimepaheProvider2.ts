@@ -15,7 +15,7 @@ import {
   BaseProvider,
   IGetEpisodeSources,
   IHandleMediaDownload,
-} from './BaseProviderV2.js';
+} from './BaseProvider.js';
 import { IProvider } from '../types/index.js';
 import { IO } from '@iamstarcode/4u-lib';
 

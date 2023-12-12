@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { BaseProvider } from './BaseProviderV2.js';
+import { BaseProvider } from './BaseProvider.js';
 import { homedir } from 'os';
 import path from 'path';
 /* 

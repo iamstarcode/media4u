@@ -6,7 +6,7 @@ import {
 } from '@consumet/extensions';
 import _ from 'lodash';
 
-import { BaseProvider, IGetMediType } from './BaseProviderV2.js';
+import { BaseProvider, IGetMediType } from './BaseProvider.js';
 import { homedir } from 'os';
 import path from 'path';
 
