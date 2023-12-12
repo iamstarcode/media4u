@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "animepahe": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe:tokyo' -d -f -q 720 -e 1-12 \"",
+    "animepahe": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe:demon slayer' -d -q 300 -e 11 \"",
     "gogo": "tsc-watch --onSuccess \"node ./build/cli.js download 'gogoanime:tokyo' -d -q 720 -e 1-12 \"",
     "animepahe2": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe2:tokyo 24' -f -d -q 720 -e 1-12 \"",
     "animesaturn": "tsc-watch --onSuccess \"node ./build/cli.js download 'animesaturn:one piece' -d -q 144 -e 1075 \"",

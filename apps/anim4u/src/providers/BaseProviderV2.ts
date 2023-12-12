@@ -20,6 +20,9 @@ import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
 import { IO, CLI } from '@iamstarcode/4u-lib';
 
+import * as readline from 'readline';
+import { createFolderIfNotFound } from '@iamstarcode/4u-lib/lib/io';
+
 export interface IGetMediType {
   type?: string;
   media: IAnimeResult;
@@ -390,28 +393,39 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    IO.createFolderIfNotFound(
-      `${IO.sanitizeFolderName(animeInfo.title.toString())}`
-    );
+    const folder = IO.sanitizeFolderName(animeInfo.title.toString());
+    IO.createFolderIfNotFound(folder);
+
     console.log(
       `Now downloading: ${chalk.yellow(animeInfo.title)} Episode ${chalk.yellow(
         episode
       )} `
     );
-    const dir = `'${path.join(animeInfo.title.toString())}'`;
 
-    const cacheDir = path.join(homedir(), 'anim4u', this._provider, 'cache');
+    const cacheDir = path.join(
+      homedir(),
+      'anim4u',
+      this._provider,
+      'cache',
+      folder,
+      '' + episode
+    );
+
+    createFolderIfNotFound(cacheDir);
+
+    console.log('linked');
+
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: `E${episode}`,
-      saveDir: IO.sanitizeFolderName(dir),
-      //cacheDir,
-      //delCache: true,
+      saveDir: folder,
+      delCache: true,
       headers: sources.headers,
     });
 
-    //this.clearDownloadCache(cacheDir, episode);
+    // await this.clearDownloadCache();
   }
+  //////
 
   async saveAsMovie(
     animeInfo: IAnimeInfo,
@@ -433,25 +447,42 @@ export class BaseProvider {
     });
   }
 
-  clearDownloadCache(folderPath: string, episode: number) {
-    try {
-      const files = fs.readdirSync(folderPath);
+  async clearDownloadCache() {
+    const inputFile = path.join(
+      homedir(),
+      'anim4u',
+      this._provider,
+      'cache',
+      'input.txt'
+    );
 
-      files.forEach((file) => {
-        if (file.includes(`-ep.${episode}`)) {
-          const filePath = path.join(folderPath, file);
+    const fileStream = fs.createReadStream(inputFile);
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity,
+    });
 
-          try {
-            fs.unlinkSync(filePath);
-          } catch (err) {
-            console.error(`Error deleting file ${file}:`, err);
-          }
-        }
-      });
-    } catch (err) {
-      console.error('Error reading folder:', err);
+    for await (const line of rl) {
+      if (line.startsWith('file')) {
+        const filePath = line.substring('file '.length).trim();
+        const absolutePath = path.resolve(filePath);
+        this.processFileDeletion(absolutePath);
+      }
     }
   }
+
+  processFileDeletion(filePath: string) {
+    try {
+      fs.unlinkSync(filePath);
+
+      console.log(`Deleted file: ${filePath}`);
+    } catch (error: any) {
+      if (this.options.debug)
+        console.error(`Error deleting file ${filePath}: ${error.message}`);
+    }
+  }
+
+  ///////
 
   async getMediaType({ type }: IGetMediType) {
     if (type?.toLocaleLowerCase().includes('movie')) {
