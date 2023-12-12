@@ -5,7 +5,7 @@ import { IO } from '@iamstarcode/4u-lib';
 
   //
   IO.createFileIfNotFound(
-    IO.sanitizeFolderName('fff?/:f'),
+    IO.sanitizeDirName('fff?/:f'),
     IO.sanitizeFileName('Dr. Stones-Stone Wars.json'),
     'nthntjhntjh'
   );

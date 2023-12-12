@@ -44,7 +44,7 @@ export class AnimepaheProvider extends BaseProvider {
     });
   }
 
-  async fetchAnime(): Promise<IAnimeResult[]> {
+  /*   async fetchAnime(): Promise<IAnimeResult[]> {
     const spinner = this.getSpinner();
 
     const searchText = `Searching ${chalk.yellow(this.query)} from ${chalk.hex(
@@ -145,6 +145,7 @@ export class AnimepaheProvider extends BaseProvider {
       //  return { type: links.type, numberOfEpisodes: allLinks.length };
     }
   }
+ */
 
   async getEpisodeSources({
     animeInfo,
@@ -258,7 +259,7 @@ export class AnimepaheProvider extends BaseProvider {
 
       const folder = type == 'TV' ? animeInfo.title.toString() : undefined;
 
-      await this.download(_url, fileName, IO.sanitizeFolderName(folder!));
+      await this.download(_url, fileName, IO.sanitizeDirName(folder!));
     } catch (error) {
       if (this.options.debug) {
         console.log(error);
@@ -361,11 +362,11 @@ export class AnimepaheProvider extends BaseProvider {
       cliProgress.Presets.legacy
     );
 
-    IO.createFolderIfNotFound(`${IO.sanitizeFolderName(folder)}`);
+    IO.createDirIfNotFound(`${IO.sanitizeDirName(folder)}`);
 
     const dl = new DownloaderHelper(
       url,
-      folder ? folder : `${IO.sanitizeFolderName(folder)}`,
+      folder ? folder : `${IO.sanitizeDirName(folder)}`,
       {
         fileName: { name: fileName },
         override: true,

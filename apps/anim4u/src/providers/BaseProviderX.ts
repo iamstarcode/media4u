@@ -72,8 +72,8 @@ export abstract class BaseProvider implements IBase {
       cliProgress.Presets.legacy
     );
 
-    IO.createFolderIfNotFound(`${IO.sanitizeFolderName(folder)}`);
-    const dl = new DownloaderHelper(url, `${IO.sanitizeFolderName(folder)}`, {
+    IO.createDirIfNotFound(`${IO.sanitizeDirName(folder)}`);
+    const dl = new DownloaderHelper(url, `${IO.sanitizeDirName(folder)}`, {
       fileName: { name: fileName },
       override: true,
     });
@@ -142,12 +142,12 @@ export abstract class BaseProvider implements IBase {
   ): Promise<{ type?: string; numberOfEpisodes: number }> {
     const mediaPath = path.join(
       this.searchPath ?? '',
-      IO.sanitizeFolderName(media?.title ?? '')
+      IO.sanitizeDirName(media?.title ?? '')
     );
 
     const linksPath = path.join(
       this.searchPath ?? '',
-      IO.sanitizeFolderName(media?.title ?? ''),
+      IO.sanitizeDirName(media?.title ?? ''),
       `links.json`
     );
 

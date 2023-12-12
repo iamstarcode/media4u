@@ -28,7 +28,7 @@ export const createFileIfNotFound = (
   return file;
 };
 
-export const createFolderIfNotFound = (folder: string) => {
+export const createDirIfNotFound = (folder: string) => {
   if (!fs.existsSync(folder)) {
     fs.mkdirSync(folder, { recursive: true });
   }
@@ -54,7 +54,7 @@ export const sanitizeName = (folderName: string) => {
   return folderName;
 };
 
-export function sanitizeFolderName(folderName: string) {
+export function sanitizeDirName(folderName: string) {
   // Define a regular expression to match special characters
   const regex = /[<>:"\/\\|?*]/g;
 

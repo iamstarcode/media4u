@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { OptionsType, Provider } from '../types/index.js';
-import { AnimepaheProvider as AnimepaheProvider2 } from '../providers/AnimepaheProvider.js';
+import { AnimepaheProvider } from '../providers/AnimepaheProvider.js';
 import { GogoanimeProvider } from '../providers/GogoanimeProvider.js';
-import { AnimepaheProvider } from '../providers/AnimepaheProvider2.js';
+import { AnimepaheProvider as AnimepaheProvider2 } from '../providers/AnimepaheProvider2.js';
 
 const downloadAction = async (_query: Provider[], options: OptionsType) => {
   const query = _query[1];

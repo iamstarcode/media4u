@@ -113,7 +113,7 @@ export class AnimepaheProvider extends BaseProvider {
   ): Promise<IAnimeInfo> {
     const mediaPath = path.join(
       this.searchPath ?? '',
-      IO.sanitizeFolderName(media?.title ?? '')
+      IO.sanitizeDirName(media?.title ?? '')
     );
 
     const spinner = await this.getSpinner(searchText);

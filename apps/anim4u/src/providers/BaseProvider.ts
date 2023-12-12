@@ -80,6 +80,7 @@ export class BaseProvider {
       type: media.type?.toString(),
       media,
     });
+
     await this.handleDownload({ animeInfo, quality: quality.toString(), type });
 
     process.exit(0);
@@ -287,8 +288,6 @@ export class BaseProvider {
     for (let i = 0; i < this.options.episodes.length; i++) {
       let choosen;
       let source: ISource | null;
-      let retrying = false;
-      let numberOfEpisodes = animeInfo.episodes?.length ?? 0;
 
       const episode = this.options.episodes[i];
 
@@ -317,16 +316,13 @@ export class BaseProvider {
 
       spinner.stop();
 
-      //Check for expired sessions, if expired re-run without using caches i'e fecthes
+      //Check for expired sessions(Animepahe), if expired re-run without using caches i'e fecthes
       //Or just do a retry
       if (source?.sources?.length == 0) {
         const source = await this.retryGetEpisodeSources({
           animeInfo,
           episode,
         });
-
-        retrying = true;
-        numberOfEpisodes = animeInfo.episodes?.length ?? 0;
       }
 
       if (type == MediaFormat.MOVIE) {
@@ -392,8 +388,8 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    const folder = IO.sanitizeFolderName(animeInfo.title.toString());
-    IO.createFolderIfNotFound(folder);
+    const folder = IO.sanitizeDirName(animeInfo.title.toString());
+    IO.createDirIfNotFound(folder);
 
     console.log(
       `Now downloading: ${chalk.yellow(animeInfo.title)} Episode ${chalk.yellow(
@@ -410,7 +406,7 @@ export class BaseProvider {
       '' + episode
     );
 
-    IO.createFolderIfNotFound(cacheDir);
+    IO.createDirIfNotFound(cacheDir);
 
     console.log('linked');
 
@@ -422,7 +418,6 @@ export class BaseProvider {
       headers: sources.headers,
     });
 
-    //
     // await this.clearDownloadCache();
   }
 
