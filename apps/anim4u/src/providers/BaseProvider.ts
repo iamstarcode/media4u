@@ -306,6 +306,8 @@ export class BaseProvider {
       //for movies exit earlier
       if (episode > 1 && type == MediaFormat.MOVIE) {
         spinner.stop();
+        console.log(chalk.yellow('You selected a movie'));
+        console.log(chalk.yellow('You should remove the episode option'));
         break;
       }
 
@@ -388,8 +390,12 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    const folder = IO.sanitizeDirName(animeInfo.title.toString());
-    IO.createDirIfNotFound(folder);
+    const saveDir = IO.sanitizeDirName(animeInfo.title.toString());
+    IO.createDirIfNotFound(saveDir);
+
+    const titleToDir = IO.sanitizeDirName(
+      Buffer.from(choosen.url).toString('base64').substring(0, 24)
+    );
 
     console.log(
       `Now downloading: ${chalk.yellow(animeInfo.title)} Episode ${chalk.yellow(
@@ -402,23 +408,21 @@ export class BaseProvider {
       'anim4u',
       this._provider,
       'cache',
-      folder,
-      '' + episode
+      titleToDir,
+      'E' + episode
     );
 
     IO.createDirIfNotFound(cacheDir);
 
-    console.log('linked');
-
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: `E${episode}`,
-      saveDir: folder,
-      delCache: true,
+      saveDir: `'${saveDir}'`,
+      cacheDir,
       headers: sources.headers,
     });
 
-    // await this.clearDownloadCache();
+    this.clearDownloadCache(cacheDir);
   }
 
   async saveAsMovie(
@@ -429,54 +433,45 @@ export class BaseProvider {
   ) {
     console.log(`${chalk.yellow(animeInfo.title)} link search complete \u2713`);
 
+    const titleToDir = IO.sanitizeDirName(
+      Buffer.from(choosen.url).toString('base64').substring(0, 24)
+    );
+
+    const cacheDir = path.join(
+      homedir(),
+      'anim4u',
+      this._provider,
+      'cache',
+      titleToDir
+    );
+
     const name: string = animeInfo.title.toString();
 
     console.log(`Now downloading: ${chalk.yellow(animeInfo.title)}`);
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: IO.sanitizeFileName(name),
-      delCache: false,
-      cacheDir: path.join(homedir(), 'anim4u', this._provider, 'cache'),
+      cacheDir,
       headers: sources.headers,
     });
+
+    this.clearDownloadCache(cacheDir);
   }
 
-  async clearDownloadCache() {
-    const inputFile = path.join(
-      homedir(),
-      'anim4u',
-      this._provider,
-      'cache',
-      'input.txt'
-    );
+  clearDownloadCache(cacheDir: string) {
+    if (fs.existsSync(cacheDir)) {
+      const files = fs.readdirSync(cacheDir);
 
-    const fileStream = fs.createReadStream(inputFile);
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity,
-    });
+      files.forEach((file) => {
+        const filePath = path.join(cacheDir, file);
+        fs.unlinkSync(filePath);
+      });
 
-    for await (const line of rl) {
-      if (line.startsWith('file')) {
-        const filePath = line.substring('file '.length).trim();
-        const absolutePath = path.resolve(filePath);
-        this.processFileDeletion(absolutePath);
-      }
+      fs.rmdirSync(cacheDir);
+    } else {
+      console.log(`Folder ${cacheDir} not found.`);
     }
   }
-
-  processFileDeletion(filePath: string) {
-    try {
-      fs.unlinkSync(filePath);
-
-      console.log(`Deleted file: ${filePath}`);
-    } catch (error: any) {
-      if (this.options.debug)
-        console.error(`Error deleting file ${filePath}: ${error.message}`);
-    }
-  }
-
-  ///////
 
   async getMediaType({ type }: IGetMediType) {
     if (type?.toLocaleLowerCase().includes('movie')) {
