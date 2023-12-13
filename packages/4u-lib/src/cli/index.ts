@@ -106,23 +106,27 @@ export const handleIfNewVersion = async (version: string, pkgName: string) => {
 };
 
 export const inquireMedia = async (medias: any[]) => {
-  const answer = await autocomplete({
-    message: 'Select a Movie or TV show ?',
+  const answer: any = await autocomplete({
+    message: 'Select a Movie or TV show',
+
     source: async (input) => {
       const filteredMedia = _.filter(medias, (item: { title: string }) =>
         item.title
           .toLocaleLowerCase()
           .includes(input?.toLocaleLowerCase() ?? '')
       );
-      return filteredMedia.map((media: { title: string }) => {
+
+      return filteredMedia.map((media: { title: string; type: string }) => {
         return {
-          value: media.title,
+          value: media,
+          name: media.title + ' — ' + media.type,
         };
       });
     },
   });
 
-  const mediaInfo = _.find(medias, (o: { title: string }) => o.title == answer);
+  const mediaInfo = _.find(medias, (o: { id: string }) => o.id == answer.id);
+
   return mediaInfo;
 };
 

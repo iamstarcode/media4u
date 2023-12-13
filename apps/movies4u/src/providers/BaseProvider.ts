@@ -83,7 +83,6 @@ export class BaseProvider {
       media,
     });
 
-    //await this.handleDownload(movieInfo, quality);
     await this.handleDownload({ movieInfo, quality: quality.toString(), type });
 
     process.exit(0);
@@ -137,10 +136,10 @@ export class BaseProvider {
     } while (hasNextPage);
 
     spinner.stop();
-    console.log(chalk.green(`Anime search complete \u2713`));
+    console.log(chalk.green(`Search complete \u2713`));
 
     if (medias == undefined || medias.length < 0) {
-      console.log(chalk.red(`No anime found \u2715 `));
+      console.log(chalk.red(`Nothing found \u2715 `));
       return [];
     } else {
       IO.createFileIfNotFound(
@@ -404,6 +403,7 @@ export class BaseProvider {
         _episode: this.options.selectedEpisodes,
       });
 
+      ///
       spinner.stop();
     } else if (movieInfo.type == TvType.TVSERIES) {
       //TODO find a better name
