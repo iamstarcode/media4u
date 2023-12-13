@@ -6,7 +6,7 @@
   "main": "dist/cli.js",
   "scripts": {
     "build": "tsc",
-    "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:house of dragon' -d -q 360 -e s7:15,2,26 -e s1:3,4 -e s1:4-7 \"",
+    "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:godfather' -f -d -q 360 -e s1:3 \"",
     "mhd": "tsc-watch --onSuccess \"node ./dist/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
     "v": "tsc-watch --onSuccess \"node ./dist/cli.js -h \""
   },
@@ -24,8 +24,6 @@
     "cheerio": "1.0.0-rc.12",
     "cli-progress": "^3.12.0",
     "commander": "^10.0.1",
-    "inquirer": "^9.2.12",
-    "inquirer-search-list": "^1.2.6",
     "lodash": "^4.17.21",
     "node-downloader-helper": "^2.1.7",
     "ora": "^7.0.1",

@@ -5,6 +5,7 @@ import {
   IMovieResult,
   ISource,
   IVideo,
+  MediaFormat,
   StreamingServers,
   TvType,
 } from '@consumet/extensions';
@@ -21,16 +22,24 @@ import fs from 'node:fs';
 import ora, { Ora } from 'ora';
 import _ from 'lodash';
 
-import inquirer from 'inquirer';
-import inquirerSearchList from 'inquirer-search-list';
 import chalk from 'chalk';
-import {
-  createFileIfNotFound,
-  createFolderIfNotFound,
-} from '../helpers/io/index.js';
+
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
+import { CLI, IO } from '@iamstarcode/4u-lib';
 
+export interface IHandleMediaDownload {
+  movieInfo: IMovieInfo;
+  type: MediaFormat;
+  choosen: any;
+  episode: number;
+  source: ISource;
+}
+
+export interface IGetMediType {
+  type?: string;
+  media: IMovieResult;
+}
 export class BaseProvider {
   options: OptionsType;
   query: string;
@@ -57,19 +66,25 @@ export class BaseProvider {
   async run() {
     let medias: IMovieResult[] = await this.getMedia();
 
-    let media: IMovieResult = await this.inquireMedia(medias);
+    let media: IMovieResult = await CLI.inquireMedia(medias);
 
     let quality;
 
     if (!this.options.quality) {
-      quality = await this.inquireQuality();
+      quality = await CLI.inquireQuality();
     } else {
       quality = this.options.quality;
     }
 
     const movieInfo = await this.getMediaInfo(media);
 
-    await this.handleDownload(movieInfo, quality);
+    const type = await this.getMediaType({
+      type: media.type?.toString(),
+      media,
+    });
+
+    //await this.handleDownload(movieInfo, quality);
+    await this.handleDownload({ movieInfo, quality: quality.toString(), type });
 
     process.exit(0);
   }
@@ -128,7 +143,7 @@ export class BaseProvider {
       console.log(chalk.red(`No anime found \u2715 `));
       return [];
     } else {
-      createFileIfNotFound(
+      IO.createFileIfNotFound(
         this.searchPath,
         `${this.query}.json`,
         JSON.stringify(medias)
@@ -176,7 +191,7 @@ export class BaseProvider {
       process.exit(1);
     } else {
       console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
-      createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
+      IO.createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
     }
 
     return data;
@@ -196,55 +211,6 @@ export class BaseProvider {
     return this.spinner;
   }
 
-  async inquireMedia(medias: IMovieResult[]) {
-    inquirer.registerPrompt('search-list', inquirerSearchList);
-    const inq: IMovieResult = await inquirer
-      .prompt([
-        {
-          type: 'search-list',
-          message: 'Select a Movie or TV show',
-          name: 'title',
-          askAnswered: true,
-          choices: medias.map((s: IMovieResult) => ({
-            name: `${s.title}`,
-            value: s.title,
-          })),
-        },
-      ])
-      .then(function (answers: { title: string }) {
-        const mediaInfo: IMovieResult = _.find(
-          medias,
-          (o: IMovieResult) => o.title == answers.title
-        );
-        return mediaInfo;
-      })
-      .catch((e: any) => console.log(e));
-    return inq;
-  }
-
-  async inquireQuality() {
-    const ui = new inquirer.ui.BottomBar();
-    const qualityRes = ['360', '480', '720', '800', '1080', '2160'];
-    const inq = await inquirer
-      .prompt([
-        {
-          type: 'list',
-          message: 'Select a prefered quality',
-          name: 'quality',
-          choices: qualityRes.map((s) => ({
-            name: `${s}p`,
-            value: s,
-          })),
-        },
-      ])
-      .then(function (answer: { quality: string }) {
-        return answer.quality;
-      })
-      .catch((e: any) => console.log(e));
-
-    return inq;
-  }
-
   getChoosenQuality(
     sources: IVideo[] | null,
     preferedRes: number
@@ -262,7 +228,6 @@ export class BaseProvider {
       for (let i = 0; i < soredted.length; i++) {
         const regexPattern = new RegExp(`(${qualityRes.join('|')})`);
         const match = soredted[i].quality?.match(regexPattern);
-        console.log(match);
 
         if (match) {
           const el = parseInt(match[1] ?? '');
@@ -343,7 +308,6 @@ export class BaseProvider {
     _movieInfo: IMovieInfo;
     _episode: any;
   }): Promise<ISource | null> {
-    let data: ISource | null = null;
     const spinner = this.getSpinner();
 
     const media =
@@ -355,15 +319,9 @@ export class BaseProvider {
     const episode = _episode as IMovieEpisode;
     spinner.start();
 
-    const servers = await this.provider.fetchEpisodeServers(
+    const srcs = await this.provider.fetchEpisodeSources(
       episode.id,
       _movieInfo.id
-    );
-    console.log(servers);
-    //'1295437', 'tv/watch-see-online-29099'
-    const srcs = await this.provider.fetchEpisodeSources(
-      '1295437',
-      'tv/watch-see-online-29099'
     );
 
     spinner.stop();
@@ -420,7 +378,15 @@ export class BaseProvider {
     return episode; */
   }
 
-  async handleDownload(movieInfo: IMovieInfo, quality: string) {
+  async handleDownload({
+    movieInfo,
+    quality,
+    type,
+  }: {
+    movieInfo: IMovieInfo;
+    quality: string;
+    type: MediaFormat;
+  }) {
     const spinner = this.getSpinner();
 
     if (movieInfo.type == TvType.MOVIE) {
@@ -429,7 +395,6 @@ export class BaseProvider {
       )} Movie link`;
       spinner.start();
 
-      const episodeLink = this.getLinks({ _movieInfo: movieInfo });
       let sources: ISource | null;
 
       spinner.start();
@@ -441,6 +406,7 @@ export class BaseProvider {
 
       spinner.stop();
     } else if (movieInfo.type == TvType.TVSERIES) {
+      //TODO find a better name
       this.getLinks({ _movieInfo: movieInfo });
 
       for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
@@ -450,19 +416,17 @@ export class BaseProvider {
           continue;
         } else {
           for (let j = 0; j < season.episodes.length; j++) {
-            const element = season.episodes[j];
-            if (!element.notFound) {
+            const episode = season.episodes[j];
+
+            if (!episode.notFound) {
               //we have an episode else proceed to down
               //fetch episode sources
 
-              //console.log('here');
-
               const srcs = await this.getEpisodeSources({
                 _movieInfo: movieInfo,
-                _episode: element,
+                _episode: episode,
               });
 
-              console.log(srcs);
               let choosen: IVideo;
               if (srcs != null) {
                 choosen = this.getChoosenQuality(
@@ -470,7 +434,13 @@ export class BaseProvider {
                   parseInt(quality)
                 );
 
-                console.log(choosen, 'this');
+                await this.handleMediaDownload({
+                  movieInfo,
+                  episode: episode.number,
+                  choosen,
+                  type,
+                  source: srcs,
+                });
               }
             } else {
               // console.log(element.notFound, element);
@@ -480,10 +450,21 @@ export class BaseProvider {
             }
           }
         }
-
-        let choosen;
-        let sources: ISource | null;
       }
+    }
+  }
+
+  async handleMediaDownload({
+    movieInfo,
+    choosen,
+    type,
+    episode,
+    source,
+  }: IHandleMediaDownload) {
+    if (type == MediaFormat.MOVIE) {
+      await this.saveAsMovie(movieInfo, 1, choosen, source);
+    } else {
+      await this.saveAsSeries(movieInfo, episode, choosen, source);
     }
   }
 
@@ -493,24 +474,39 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    createFolderIfNotFound(`./${movieInfo.title}`);
+    const saveDir = IO.sanitizeDirName(movieInfo.title.toString());
+    IO.createDirIfNotFound(saveDir);
+
+    const titleToDir = IO.sanitizeDirName(
+      Buffer.from(choosen.url).toString('base64').substring(0, 24)
+    );
+
     console.log(
       `Now downloading: ${chalk.yellow(movieInfo.title)} Episode ${chalk.yellow(
         episode
       )} `
     );
-    const dir = `'${path.join(movieInfo.title.toString())}'`;
 
-    const cacheDir = path.join(homedir(), 'movie4u', this._provider, 'cache');
+    const cacheDir = path.join(
+      homedir(),
+      'movie4u',
+      this._provider,
+      'cache',
+      titleToDir,
+      'E' + episode
+    );
+
+    IO.createDirIfNotFound(cacheDir);
+
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: `E${episode}`,
-      saveDir: dir,
+      saveDir: `'${saveDir}'`,
       cacheDir,
       headers: sources.headers,
     });
 
-    this.clearDownloadCache(cacheDir, episode);
+    this.clearDownloadCache(cacheDir);
   }
 
   async saveAsMovie(
@@ -519,43 +515,51 @@ export class BaseProvider {
     choosen: IVideo,
     sources: ISource
   ) {
-    console.log(
-      'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
-    );
-
     console.log(`${chalk.yellow(movieInfo.title)} link search complete \u2713`);
 
+    const titleToDir = IO.sanitizeDirName(
+      Buffer.from(choosen.url).toString('base64').substring(0, 24)
+    );
+
+    const cacheDir = path.join(
+      homedir(),
+      'movie4u',
+      this._provider,
+      'cache',
+      titleToDir
+    );
+
     const name: string = movieInfo.title.toString();
-    const regex = new RegExp(' ', 'g');
-    const result = name.replace(regex, '-');
 
     console.log(`Now downloading: ${chalk.yellow(movieInfo.title)}`);
     await m3u8Download(choosen.url, {
       showProgress: true,
-      filename: result,
-      delCache: true,
-      cacheDir: path.join(homedir(), 'movie4u', this._provider, 'cache'),
+      filename: IO.sanitizeFileName(name),
+      cacheDir,
       headers: sources.headers,
     });
+
+    this.clearDownloadCache(cacheDir);
   }
 
-  clearDownloadCache(folderPath: string, episode: number) {
-    try {
-      const files = fs.readdirSync(folderPath);
+  clearDownloadCache(cacheDir: string) {
+    if (fs.existsSync(cacheDir)) {
+      const files = fs.readdirSync(cacheDir);
 
       files.forEach((file) => {
-        if (file.includes(`-ep.${episode}`)) {
-          const filePath = path.join(folderPath, file);
-
-          try {
-            fs.unlinkSync(filePath);
-          } catch (err) {
-            console.error(`Error deleting file ${file}:`, err);
-          }
-        }
+        const filePath = path.join(cacheDir, file);
+        fs.unlinkSync(filePath);
       });
-    } catch (err) {
-      console.error('Error reading folder:', err);
+
+      fs.rmdirSync(cacheDir);
+    } else {
+      console.log(`Folder ${cacheDir} not found.`);
     }
+  }
+
+  async getMediaType({ type }: IGetMediType) {
+    if (type?.toLocaleLowerCase().includes('movie')) {
+      return MediaFormat.MOVIE;
+    } else return MediaFormat.TV;
   }
 }

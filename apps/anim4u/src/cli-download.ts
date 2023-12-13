@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import downloadAction from './actions/download.js';
-import {
-  episodesSeperated,
-  providerSeperated,
-  pasrseResolution,
-} from './helpers/cliParsers.js';
+
+import { CLI } from '@iamstarcode/4u-lib';
 
 const program = new Command();
 function main() {
@@ -13,12 +10,12 @@ function main() {
     .argument(
       '<provider:anime>',
       'The provider and name of the anime seprated by :',
-      providerSeperated
+      CLI.providerSeperated
     )
     .option('-d, --debug', 'Debugging', false)
     .option('-f, --force', 'Force refecth', false)
-    .option('-q, --quality <number>', 'Quality', pasrseResolution)
-    .option('-e, --episodes [items]', 'Episode', episodesSeperated, [1])
+    .option('-q, --quality <number>', 'Quality', CLI.pasrseResolution)
+    .option('-e, --episodes [items]', 'Episode', CLI.episodesSeperated, [1])
     .action(downloadAction);
   program.parseAsync(process.argv);
 }

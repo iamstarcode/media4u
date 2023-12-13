@@ -3,6 +3,18 @@ import _ from 'lodash';
 import autocomplete from 'inquirer-autocomplete-standalone';
 import select, { Separator } from '@inquirer/select';
 
+export const providerSeperated = (value: string) => {
+  return value.split(':');
+};
+
+export const pasrseResolution = (value: string) => {
+  return parseInt(value);
+};
+
+export function collect(value: any, previous: any[]) {
+  return previous.concat([value]);
+}
+
 export const checkFormat = (episodes: any) => {
   for (let i = 0; i < episodes.selectedEpisodes; i++) {
     const episode = episodes[i];

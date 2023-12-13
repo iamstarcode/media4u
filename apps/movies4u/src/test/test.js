@@ -57,30 +57,30 @@ function getServerEnum(server) {
   const provider = new MOVIES.FlixHQ();
   //console.log(provider);
 
-  console.log(typeof getServerEnum('vidmoly'));
+  // console.log(typeof getServerEnum('vidmoly'));
   //console.log(provider);
 
-  /*  provider.search('See').then((data) => {
+  /* provider.search('godfather').then((data) => {
     console.log(data);
   }); */
 
-  /*  provider.fetchMediaInfo('tv/watch-see-29099').then((data) => {
+  /*  provider.fetchMediaInfo('tv/watch-godfather-of-harlem-25445').then((data) => {
     console.log(data);
-  }); */
-
+  });
+ */
   /*  provider.fetchEpisodeServers('1125905', 'tv/watch-see-29099').then((data) => {
     console.log(data);
   });
  */
-  /*   provider
+  provider
     .fetchEpisodeSources(
-      '1125905',
-      'tv/watch-see-29099',
+      '1177322',
+      'tv/watch-godfather-of-harlem-25445',
       StreamingServers.UpCloud
     )
     .then((data) => {
       console.log(data);
-    }); */
+    });
 
   /*   provider.fetchAnimeInfo('overlord-ple-ple-pleiades-3543').then((data) => {
     console.log(data);

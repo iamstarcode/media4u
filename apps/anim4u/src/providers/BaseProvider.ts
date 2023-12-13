@@ -20,8 +20,6 @@ import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
 import { IO, CLI } from '@iamstarcode/4u-lib';
 
-import * as readline from 'readline';
-
 export interface IGetMediType {
   type?: string;
   media: IAnimeResult;
