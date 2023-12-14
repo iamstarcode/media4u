@@ -78,6 +78,8 @@ export class BaseProvider {
 
     const movieInfo = await this.getMediaInfo(media);
 
+    console.log(movieInfo, 'gfcffscm');
+
     const type = await this.getMediaType({
       type: media.type?.toString(),
       media,
@@ -388,7 +390,16 @@ export class BaseProvider {
   }) {
     const spinner = this.getSpinner();
 
-    if (movieInfo.type == TvType.MOVIE) {
+    /*   console.log(
+      movieInfo,
+      TvType.MOVIE.toLocaleLowerCase(),
+      movieInfo.type?.toLocaleLowerCase(),
+      'jjjjjjjjjx'
+    ); */
+
+    if (
+      movieInfo.type?.toLocaleLowerCase() == TvType.MOVIE.toLocaleLowerCase()
+    ) {
       spinner.text = `Searching for ${chalk.yellow(
         movieInfo.title
       )} Movie link`;
