@@ -44,7 +44,7 @@ export class AnimepaheProvider extends BaseProvider {
     });
   }
 
-  /*   async fetchAnime(): Promise<IAnimeResult[]> {
+  async fetchAnime(): Promise<IAnimeResult[]> {
     const spinner = this.getSpinner();
 
     const searchText = `Searching ${chalk.yellow(this.query)} from ${chalk.hex(
@@ -145,7 +145,6 @@ export class AnimepaheProvider extends BaseProvider {
       //  return { type: links.type, numberOfEpisodes: allLinks.length };
     }
   }
- */
 
   async getEpisodeSources({
     animeInfo,

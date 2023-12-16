@@ -1,14 +1,14 @@
 {
   "bin": "./build/cli.js",
   "name": "anim4u",
-  "version": "0.1.9",
+  "version": "0.1.9rc1",
   "description": "",
   "main": "build/cli.js",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "animepahe": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe:demon slayer' -d -q 720 -e 1-11 \"",
-    "animepahe2": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe2:demon slayer' -f -d -q 720 -e 1-12 \"",
+    "animepahe": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe:enen' -d -q 720 -e 18-24 \"",
+    "animepahe2": "tsc-watch --onSuccess \"node ./build/cli.js download 'animepahe2:dr stone' -f -d -q 720 -e 24 \"",
     "gogo": "tsc-watch --onSuccess \"node ./build/cli.js download 'gogoanime:demon slayer' -d -q 720 -e 1-12 \"",
     "animesaturn": "tsc-watch --onSuccess \"node ./build/cli.js download 'animesaturn:one piece' -d -q 144 -e 1075 \"",
     "dev:clear": "tsc-watch --onSuccess \"node ./build/cli.js clear all \"",
