@@ -1,7 +1,7 @@
 {
   "bin": "./build/cli.js",
   "name": "anim4u",
-  "version": "0.1.9rc1",
+  "version": "0.1.9-rc.1",
   "description": "",
   "main": "build/cli.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "animesaturn": "tsc-watch --onSuccess \"node ./build/cli.js download 'animesaturn:one piece' -d -q 144 -e 1075 \"",
     "dev:clear": "tsc-watch --onSuccess \"node ./build/cli.js clear all \"",
     "dev:help": "tsc-watch --onSuccess \"node ./build/cli.js download -h \"",
-    "v": "tsc-watch --onSuccess \"node ./build/cli.js -h \""
+    "v": "tsc-watch --onSuccess \"node ./build/cli.js --help \""
   },
   "keywords": [],
   "author": "",
