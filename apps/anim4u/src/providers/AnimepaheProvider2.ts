@@ -222,7 +222,7 @@ export class AnimepaheProvider extends BaseProvider {
     spinner.text = searchText;
     spinner.start();
 
-    const jar = new tough.CookieJar();
+    const jar: any = new tough.CookieJar();
 
     const client = wrapper(axios.create({ jar }));
 
