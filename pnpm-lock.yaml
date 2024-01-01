@@ -21,7 +21,7 @@ importers:
   apps/anim4u:
     dependencies:
       '@consumet/extensions':
-        specifier: ^1.5.2
+        specifier: ^1.5.4
         version: 1.5.4
       '@iamstarcode/4u-lib':
         specifier: workspace:^
