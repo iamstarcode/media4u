@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 const { __dirname } = IO.fileDirName(import.meta);
-const packageJsonPath = path.resolve(__dirname, 'package.json');
+const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
 const packagejson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 (async () => {
