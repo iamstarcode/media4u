@@ -1,7 +1,6 @@
 {
   "extends": "../../base.json",
   "compilerOptions": {
-    "rootDir": "src",
     "outDir": "build",
     "resolveJsonModule": true
   }

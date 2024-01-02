@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { CLI } from '@iamstarcode/4u-lib';
+import { CLI, IO } from '@iamstarcode/4u-lib';
 
 import fs from 'fs';
-const packagejson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+import path from 'path';
+
+const { __dirname } = IO.fileDirName(import.meta);
+const packageJsonPath = path.resolve(__dirname, 'package.json');
+const packagejson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 (async () => {
   const program = new Command();
   const version = packagejson.version;
-  //console.log(packagejson.version);
 
   await CLI.handleIfNewVersion(version!, 'anim4u');
 
