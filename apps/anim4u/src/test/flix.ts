@@ -1,7 +1,11 @@
-import { MOVIES } from '@consumet/extensions';
+import { ANIME, MOVIES } from '@consumet/extensions';
 
 (async () => {
   const flix = new MOVIES.FlixHQ();
+  const p = new ANIME.AnimePahe();
+  p.search('naruto').then((data) => {
+    console.log(data);
+  });
 
   /*  flix.search('See').then((data) => {
     console.log(data);

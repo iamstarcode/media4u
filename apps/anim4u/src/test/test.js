@@ -1,8 +1,8 @@
-(async () => {
-  const originalFileName = 'my/file:name?<>|example';
+import { ANIME, MOVIES } from '@consumet/extensions';
 
-  const encoded = Buffer.from('Kimetsu no Yaiba- Yuukaku-hen')
-    .toString('base64url')
-    .substring(0, 24);
-  console.log(encoded);
+(async () => {
+  const p = new ANIME.Gogoanime();
+  p.search('naruto').then((data) => {
+    console.log(data);
+  });
 })();
