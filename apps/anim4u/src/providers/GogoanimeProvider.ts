@@ -23,6 +23,7 @@ export class GogoanimeProvider extends BaseProvider {
       _provider: 'gogoanime',
     });
   }
+  /////////
 
   async getMediaType({
     media,
