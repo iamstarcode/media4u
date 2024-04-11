@@ -25,7 +25,7 @@ export class GogoanimeProvider extends BaseProvider {
   }
   /////////
 
-  async getMediaType({
+  /*   async getMediaType({
     media,
     type,
   }: IGetMediType): Promise<MediaFormat.MOVIE | MediaFormat.TV> {
@@ -37,5 +37,5 @@ export class GogoanimeProvider extends BaseProvider {
     } else {
       return MediaFormat.TV;
     }
-  }
+  } */
 }

@@ -172,7 +172,10 @@ export class BaseProvider {
 
   async fetchAnimeInfo(anime: IAnimeResult): Promise<IAnimeInfo> {
     const spinner = this.getSpinner();
-    const mediaPath = path.join(this.searchPath, anime.title.toString());
+    const mediaPath = path.join(
+      this.searchPath,
+      IO.sanitizeDirName(anime.title.toString())
+    );
 
     spinner.text = `Searching ${chalk.yellow(anime.title.toString())} info`;
     spinner.start();
@@ -185,6 +188,8 @@ export class BaseProvider {
       process.exit(1);
     } else {
       console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
+      //IO.createDirIfNotFound(this.searchPath);
+
       IO.createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
     }
 
@@ -194,13 +199,12 @@ export class BaseProvider {
   getLinksPath({ title }: { title: string | ITitle }) {
     const linksPath = path.join(
       this.searchPath,
-      title.toString(),
+      IO.sanitizeDirName(title.toString()),
       `links.json`
     );
 
     return linksPath;
   }
-
   getSpinner() {
     return this.spinner;
   }
