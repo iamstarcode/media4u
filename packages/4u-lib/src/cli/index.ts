@@ -119,7 +119,7 @@ export const inquireMedia = async (medias: any[]) => {
       return filteredMedia.map((media: { title: string; type: string }) => {
         return {
           value: media,
-          name: media.title + ' — ' + media.type,
+          name: media.title + ' — ' + media.type ? media.type : '',
         };
       });
     },
