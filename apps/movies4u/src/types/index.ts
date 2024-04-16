@@ -51,7 +51,7 @@ export type ISupportedProvider = FlixHQ | MovieHdWatch;
 export interface IBaseProvider {
   options: OptionsType;
   query: string;
-  provider: BaseParser;
+  provider: ISupportedProvider;
   searchPath: string;
   providerName: 'flixhq' | 'moviehdwatch' | 'vidsrcto';
 }

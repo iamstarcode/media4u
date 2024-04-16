@@ -50,10 +50,10 @@ export interface IGetMediType {
 export class BaseProvider {
   options: OptionsType;
   query: string;
-  provider: BaseParser;
-  providerName: string;
+  provider: ISupportedProvider;
+  providerName;
   searchPath: string;
-  _provider: Provider;
+  //_provider: Provider;
   spinner: Ora;
 
   constructor({
@@ -157,7 +157,7 @@ export class BaseProvider {
     const spinner = this.getSpinner();
     let providerColor;
 
-    if (this._provider == 'FlixHQ') {
+    if (this.providerName == 'flixhq') {
       providerColor = chalk.hex('#79c142')(this.provider.name);
     }
 
@@ -560,7 +560,7 @@ export class BaseProvider {
     const cacheDir = path.join(
       homedir(),
       'movie4u',
-      this._provider,
+      this.providerName,
       'cache',
       titleToDir,
       'E' + episode
@@ -594,7 +594,7 @@ export class BaseProvider {
     const cacheDir = path.join(
       homedir(),
       'movie4u',
-      this._provider,
+      this.providerName,
       'cache',
       titleToDir
     );

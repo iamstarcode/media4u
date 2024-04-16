@@ -3,33 +3,41 @@ import fs, { readFileSync } from 'node:fs';
 import path from 'path';
 import Spinner from '../utils/spinner';
 import { IMovieResult } from '@consumet/extensions';
-import { IO } from '@iamstarcode/4u-lib';
+import { CLI, IO } from '@iamstarcode/4u-lib';
 import chalk from 'chalk';
+import ora, { Ora } from 'ora';
 
+interface MediResult {
+  id: string;
+  media_type: 'tv' | 'movie';
+  name: string;
+  first_air_date: string;
+}
 export class BaseMovieWebProvider {
   options: OptionsType;
   searchPath: string;
   query: string;
   providerName;
-
   API_BASE_URL: string;
+  spinner: Ora;
+
   constructor({
     options,
     searchPath,
     query,
     providerName,
   }: MovieWebBaseProviderType) {
+    const url = 'http://localhost:8000';
+    //const url = 'https://tmdb-api-brown.vercel.app';
     this.options = options;
     this.searchPath = searchPath;
     this.query = query;
     this.providerName = providerName;
-    this.API_BASE_URL =
-      process.env.NODE_ENV == 'development'
-        ? 'localhost:8000'
-        : 'https://tmdb-api-brown.vercel.app/';
+    this.API_BASE_URL = url;
+    this.spinner = ora({ spinner: 'dots12' });
   }
 
-  async getMedia(): Promise<{ id: number; name: string }[]> {
+  async getMedia(): Promise<MediResult[]> {
     if (this.options.force) {
       return await this.fetchMedia();
     } else {
@@ -43,11 +51,11 @@ export class BaseMovieWebProvider {
     }
   }
 
-  async fetchMedia(): Promise<{ id: number; name: string }[]> {
-    const spinner = Spinner();
+  async fetchMedia(): Promise<MediResult[]> {
+    const spinner = this.getSpinner();
     let providerColor;
 
-    if (this.providerName == 'VidSrcTo') {
+    if (this.providerName == 'vidsrcto') {
       providerColor = chalk.hex('#79c142')(this.providerName);
     }
 
@@ -57,28 +65,21 @@ export class BaseMovieWebProvider {
 
     spinner.text = searchText;
     spinner.start();
-    const medias: IMovieResult[] = [];
+    //const medias: IMovieResult[] = [];
 
     let page = 1;
     let hasNextPage: boolean;
 
-    const response = await fetch(
-      `${this.API_BASE_URL}/search?query${this.query}`
-    );
-    /*     do {
-      const data = await this.provider.search(this.query, page);
-      if (page == 5) {
-        break;
-      }
-      if (data.hasNextPage) {
-        hasNextPage = true;
-        page++;
-      } else {
-        hasNextPage = false;
-      }
-      medias.push(...data.results);
-    } while (hasNextPage);
- */
+    const apiURL = new URL(`${this.API_BASE_URL}/search`);
+    apiURL.searchParams.append('query', this.query);
+    const response = await fetch(apiURL.toString(), {
+      method: 'GET',
+    });
+
+    const data = await response.json(); ///sxsx  nnn/
+
+    const medias = data.data;
+
     spinner.stop();
     console.log(chalk.green(`Search complete \u2713`));
 
@@ -95,5 +96,15 @@ export class BaseMovieWebProvider {
     }
   }
 
-  async run() {}
+  async run() {
+    const medias: MediResult[] = await this.getMedia();
+
+    console.log(medias, 'ecenjcnejcnj');
+    // if(medias.data)///////////
+    let media: IMovieResult = await CLI.inquireMedia(medias);
+  }
+
+  getSpinner() {
+    return this.spinner;
+  }
 }
