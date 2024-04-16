@@ -110,22 +110,27 @@ export const inquireMedia = async (medias: any[]) => {
     message: 'Select a Movie or TV show',
 
     source: async (input) => {
-      const filteredMedia = _.filter(medias, (item: { title: string }) =>
+      /*   const filteredMedia = _.filter(medias, (item: { title: string }) =>
         item.title
           .toLocaleLowerCase()
           .includes(input?.toLocaleLowerCase() ?? '')
-      );
+      ); */
 
-      return filteredMedia.map((media: { title: string; type: string }) => {
-        return {
-          value: media,
-          name: media.title + ' — ' + media.type ? media.type : '',
-        };
-      });
+      return medias.map(
+        (media: { title: string; type: string; release_date: string }) => {
+          const { type, release_date, title } = media;
+          return {
+            value: media,
+            name: `${title} - ${
+              title != undefined ? '[' + type.toLocaleUpperCase() + ']' : ''
+            } ${release_date != undefined ? '[' + release_date + ']' : ''}`,
+          };
+        }
+      );
     },
   });
 
-  const mediaInfo = _.find(medias, (o: { id: string }) => o.id == answer.id);
+  const mediaInfo = _.find(medias, (o: { id: any }) => o.id == answer.id);
 
   return mediaInfo;
 };

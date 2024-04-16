@@ -65,10 +65,6 @@ export class BaseMovieWebProvider {
 
     spinner.text = searchText;
     spinner.start();
-    //const medias: IMovieResult[] = [];
-
-    let page = 1;
-    let hasNextPage: boolean;
 
     const apiURL = new URL(`${this.API_BASE_URL}/search`);
     apiURL.searchParams.append('query', this.query);
@@ -76,7 +72,7 @@ export class BaseMovieWebProvider {
       method: 'GET',
     });
 
-    const data = await response.json(); ///sxsx  nnn/
+    const data = await response.json();
 
     const medias = data.data;
 
@@ -99,9 +95,7 @@ export class BaseMovieWebProvider {
   async run() {
     const medias: MediResult[] = await this.getMedia();
 
-    console.log(medias, 'ecenjcnejcnj');
-    // if(medias.data)///////////
-    let media: IMovieResult = await CLI.inquireMedia(medias);
+    let media: any = await CLI.inquireMedia(medias);
   }
 
   getSpinner() {

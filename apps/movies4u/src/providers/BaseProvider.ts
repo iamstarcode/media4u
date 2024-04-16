@@ -115,7 +115,7 @@ export class BaseProvider {
 
     let medias: IMovieResult[] = await this.getMedia();
 
-    let media: IMovieResult = await CLI.inquireMedia(medias);
+    let media: any = await CLI.inquireMedia(medias);
 
     let quality;
 
