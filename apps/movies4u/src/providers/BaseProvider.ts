@@ -28,6 +28,13 @@ import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
 import { CLI, IO } from '@iamstarcode/4u-lib';
 
+import {
+  makeProviders,
+  makeStandardFetcher,
+  targets,
+} from '@movie-web/providers';
+import { BaseParser } from '@consumet/extensions/dist/models';
+
 export interface IHandleMediaDownload {
   movieInfo: IMovieInfo;
   type: MediaFormat;
@@ -43,7 +50,8 @@ export interface IGetMediType {
 export class BaseProvider {
   options: OptionsType;
   query: string;
-  provider: ISupportedProvider;
+  provider: BaseParser;
+  providerName: string;
   searchPath: string;
   _provider: Provider;
   spinner: Ora;
@@ -53,17 +61,58 @@ export class BaseProvider {
     query,
     provider,
     searchPath,
-    _provider,
+    providerName,
   }: IBaseProvider) {
     this.options = options;
     this.query = query;
     this.provider = provider;
     this.searchPath = searchPath;
-    this._provider = _provider;
+    this.providerName = providerName;
     this.spinner = ora({ spinner: 'dots12' });
   }
 
   async run() {
+    const providers = makeProviders({
+      fetcher: makeStandardFetcher(fetch),
+      target: targets.ANY, // target native app streams
+    });
+
+    const mediax: any = {
+      title: 'Dr. STONE',
+      releaseYear: 2019,
+      tmdbId: '86031',
+      type: 'show',
+      imdbId: 'tt9679542',
+      episode: {
+        number: 3,
+        title: 'Weapons of Science',
+        tmdbId: '1814295',
+      },
+      season: {
+        number: 1,
+        title: 'Season 1',
+        tmdbId: '117113',
+      },
+    };
+    // scrape a stream
+    const stream = await providers.runAll({
+      media: mediax,
+    });
+
+    // scrape a stream, but prioritize flixhq above all
+    // (other scrapers are still run if flixhq fails, it just has priority)
+    const flixhqStream = await providers.runAll({
+      media: mediax,
+      sourceOrder: ['flixhq'],
+    });
+
+    console.log(flixhqStream, 'mxskmksxmksmxk');
+
+    /*   const output = await providers.runEmbedScraper({
+      id: 'vidcloud',
+      url: 'https://flixhq.to/watch-movie/watch-hamilton-62097.2767351',
+    }); */
+
     let medias: IMovieResult[] = await this.getMedia();
 
     let media: IMovieResult = await CLI.inquireMedia(medias);
@@ -78,7 +127,7 @@ export class BaseProvider {
 
     const movieInfo = await this.getMediaInfo(media);
 
-    console.log(movieInfo, 'gfcffscm');
+    //console.log(movieInfo, 'gfcffscm');
 
     const type = await this.getMediaType({
       type: media.type?.toString(),
@@ -320,10 +369,19 @@ export class BaseProvider {
     const episode = _episode as IMovieEpisode;
     spinner.start();
 
+    await this.provider
+      .fetchEpisodeServers('1239892', 'tv/watch-from-77455')
+      .then((data) => {
+        console.log(data);
+      });
+
     const srcs = await this.provider.fetchEpisodeSources(
-      episode.id,
-      _movieInfo.id
+      '1239892',
+      'tv/watch-from-77455'
+      //StreamingServers.MixDrop
     );
+
+    console.log(srcs, 'ddddddddddddddda');
 
     spinner.stop();
     return srcs;
@@ -423,6 +481,7 @@ export class BaseProvider {
       for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
         const season = this.options.selectedEpisodes[i];
 
+        console.log(season, 'xcccc');
         if (season.notFound) {
           continue;
         } else {

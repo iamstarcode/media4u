@@ -1,4 +1,5 @@
 import FlixHQ from '@consumet/extensions/dist/providers/movies/flixhq';
+import { BaseParser } from '@consumet/extensions/dist/models';
 import MovieHdWatch from '@consumet/extensions/dist/providers/movies/movidhdwatch';
 
 export interface IMedia {
@@ -50,10 +51,12 @@ export type ISupportedProvider = FlixHQ | MovieHdWatch;
 export interface IBaseProvider {
   options: OptionsType;
   query: string;
-  provider: ISupportedProvider;
+  provider: BaseParser;
   searchPath: string;
-  _provider: Provider;
+  providerName: 'flixhq' | 'moviehdwatch' | 'vidsrcto';
 }
+
+export type MovieWebBaseProviderType = Omit<IBaseProvider, 'provider'>;
 
 export interface IProvider {
   options: OptionsType;

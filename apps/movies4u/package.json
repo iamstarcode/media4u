@@ -6,7 +6,8 @@
   "main": "dist/cli.js",
   "scripts": {
     "build": "tsc",
-    "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:oppenheimer' -f -d -q 360 -e s1:3 \"",
+    "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:from' -f -d -q 360 -e s1:3 \"",
+    "vidsrcto": "tsc-watch --onSuccess \"node ./dist/cli.js download 'vidsrcto:avatar' -f -d -q 360 -e s1:2 \"",
     "mhd": "tsc-watch --onSuccess \"node ./dist/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
     "v": "tsc-watch --onSuccess \"node ./dist/cli.js -h \""
   },

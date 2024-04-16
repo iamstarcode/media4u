@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import { MovieHdWatchProvider } from '../providers/MovieHdWatchProvider.js';
 
 import { CLI } from '@iamstarcode/4u-lib';
+import { VidSrcToProvider } from '../providers/VidSrcToProvider.js';
 
 const downloadAction = async (_query: Provider[], options: OptionsType) => {
   const streamedEpisodes = CLI.handleEpisodes(options.selectedEpisodes);
@@ -13,7 +14,7 @@ const downloadAction = async (_query: Provider[], options: OptionsType) => {
   options.selectedEpisodes = streamedEpisodes;
 
   const query = _query[1];
-  const provider: Provider = _query[0];
+  const provider = _query[0];
 
   const obj = { options, query, provider };
 
@@ -27,6 +28,13 @@ const downloadAction = async (_query: Provider[], options: OptionsType) => {
   } else if (provider == 'MovieHdWatch'.toLocaleLowerCase()) {
     const provider = new MovieHdWatchProvider(obj);
     await provider.run();
+  } else if (provider.toLocaleLowerCase() == 'vidsrcto') {
+    const vidSrcToprovider = new VidSrcToProvider({
+      options,
+      providerName: 'vidsrcto',
+      query,
+    });
+    await vidSrcToprovider.run();
   } else {
     console.log(chalk.red('Provider not found'));
     process.exit(0);

@@ -14,7 +14,7 @@ export class FlixHQProvider extends BaseProvider {
       query,
       provider: new MOVIES.FlixHQ(),
       searchPath: path.join(homedir(), 'movie4u', 'FlixHQ', 'Searches'),
-      _provider: 'FlixHQ',
+      providerName: 'flixhq',
     });
   }
 }
