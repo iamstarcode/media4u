@@ -110,12 +110,6 @@ export const inquireMedia = async (medias: any[]) => {
     message: 'Select a Movie or TV show',
 
     source: async (input) => {
-      /*   const filteredMedia = _.filter(medias, (item: { title: string }) =>
-        item.title
-          .toLocaleLowerCase()
-          .includes(input?.toLocaleLowerCase() ?? '')
-      ); */
-
       return medias.map(
         (media: { title: string; type: string; release_date: string }) => {
           const { type, release_date, title } = media;

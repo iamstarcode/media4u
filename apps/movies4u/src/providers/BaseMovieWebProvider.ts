@@ -70,6 +70,9 @@ export class BaseMovieWebProvider {
     this.spinner = ora({ spinner: 'dots12' });
   }
 
+  //Overrides
+  async providerDownload({}: { provider: string; media: any }): Promise<void> {}
+
   async getMedia(): Promise<IMediResult[]> {
     if (this.options.force) {
       return await this.fetchMedia();
@@ -122,29 +125,6 @@ export class BaseMovieWebProvider {
         JSON.stringify(medias)
       );
       return medias;
-    }
-  }
-
-  async run() {
-    const medias: IMediResult[] = await this.getMedia();
-
-    let media: IMediResult = await CLI.inquireMedia(medias);
-
-    let quality;
-
-    if (!this.options.quality) {
-      quality = await CLI.inquireQuality();
-    } else {
-      quality = this.options.quality;
-    }
-
-    ////
-    //
-    const mediaInfo: IMediaInfo = await this.getMediaInfo(media);
-
-    await this.handleDownload({ mediaInfo, quality: this.options.quality });
-
-    if (mediaInfo.type == 'tv') {
     }
   }
 
@@ -223,27 +203,38 @@ export class BaseMovieWebProvider {
     return mediaInfo;
   }
 
-  async handleDownload({
-    mediaInfo,
-    quality,
-  }: {
-    mediaInfo: IMediaInfo;
-    quality: number;
-  }) {
-    const spinner = this.getSpinner();
+  async run() {
+    const medias: IMediResult[] = await this.getMedia();
 
+    let media: IMediResult = await CLI.inquireMedia(medias);
+
+    let quality;
+
+    if (!this.options.quality) {
+      quality = await CLI.inquireQuality();
+    } else {
+      quality = this.options.quality;
+    }
+
+    ////
+    //
+    const mediaInfo: IMediaInfo = await this.getMediaInfo(media);
+
+    await this.handleDownload({ mediaInfo });
+
+    if (mediaInfo.type == 'tv') {
+    }
+  }
+
+  async handleDownload({ mediaInfo }: { mediaInfo: IMediaInfo }) {
     if (mediaInfo.type == 'movie') {
     } else {
-      //console.log(mediaInfo, 'edededed');
-      // console.log(this.options.selectedEpisodes);
       for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
         const season = this.options.selectedEpisodes[i];
 
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
-          //or we do it here
-          //console.log(mediaInfo);
           const response = await fetch(
             `${this.API_BASE_URL}/tv/${mediaInfo.id}/season/${season.season}`
           );
@@ -257,7 +248,6 @@ export class BaseMovieWebProvider {
               (item) => item.episode_number == episode
             );
 
-            //console.log(foundEpisode, 'fnefnefni');
             const media: any = {
               title: mediaInfo.title,
               releaseYear: 2005,
@@ -277,37 +267,10 @@ export class BaseMovieWebProvider {
             };
 
             await this.providerDownload({ provider: this.providerName, media });
-
-            /*  const streamUrl =
-              'https://pdrz.v421c6e485f.site/_v2-lrld/12a3c523fc105800ed8c394685aeeb0b9b2ea15c00bdbeed0a0e7baea93ece832257df1a4b6125fcfa38c35da05dee86aad28d46d73fc4e9d4e5a53a5277f3d537c512e30918b40d5691a6b039107b126566d1700700379a93d9e159d4e62e9a7942a11c563de701f1ad6d5de2/h/ecddaaeae1/ccdeeffb;15a38634f803584ba8926411d7bee906856cab0654b5b7.m3u8'; // Replace with your stream URL
-            const outputFileName = 'output.mp4'; // Output file name
-            const headers = {
-              Referer: 'https://vid30c.site',
-              Origin: 'https://vid30c.site',
-            };
-
-            this.downloadStreamWithHeaders(streamUrl, headers, outputFileName); */
-
-            /*   await m3u8Download('', {
-              showProgress: true,
-              filename: `Ejj`,
-              //saveDir: `'${saveDir}'`,
-              // cacheDir,
-              headers: {
-                Referer: 'https://vid30c.site',
-                Origin: 'https://vid30c.site',
-              },
-            }); */
           }
         }
       }
     }
-  }
-
-  async providerDownload({}: { provider: string; media: any }): Promise<void> {}
-
-  getSpinner() {
-    return this.spinner;
   }
 
   async downloadStreamWithHeaders({
@@ -395,28 +358,7 @@ export class BaseMovieWebProvider {
     });
   }
 
-  buildHeadersFromStream(stream: Stream): Record<string, string> {
-    const headers: Record<string, string> = {};
-    Object.entries(stream.headers ?? {}).forEach((entry) => {
-      headers[entry[0]] = entry[1];
-    });
-    Object.entries(stream.preferredHeaders ?? {}).forEach((entry) => {
-      headers[entry[0]] = entry[1];
-    });
-    return headers;
-  }
-
-  async getVideowlUrlStream(decryptedId: string) {
-    const sharePage = await fetch(
-      'https://cloud.mail.ru/public/uaRH/2PYWcJRpH'
-    );
-    /*  const regex = /"videowl_view":\{"count":"(\d+)","url":"([^"]+)"\}/g;
-    const videowlUrl = regex.exec(sharePage)?.[2];
-
-    if (!videowlUrl) throw new NotFoundError('Failed to get videoOwlUrl');
-
-    return `${videowlUrl}/0p/${btoa(decryptedId)}.m3u8?${new URLSearchParams({
-      double_encode: '1',
-    })}`; */
+  getSpinner() {
+    return this.spinner;
   }
 }
