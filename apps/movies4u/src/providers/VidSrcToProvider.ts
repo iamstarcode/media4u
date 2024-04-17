@@ -60,14 +60,11 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
         this.options.quality,
         res
       );
-      console.log(closestStream, 'ckmcke');
 
-      await m3u8Download(closestStream?.url!, {
-        showProgress: true,
-        filename: `frhfrhfj.mp4`,
-        saveDir: `jhedue`,
-        //cacheDir,
+      await this.downloadStreamWithHeaders({
+        streamUrl: closestStream?.url,
         headers: output.stream.headers,
+        media,
       });
     }
   }

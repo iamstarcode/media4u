@@ -1,5 +1,27 @@
 import * as crypto from 'crypto';
 
+export function formatTime(timeString: string) {
+  const [hours, minutes, seconds] = timeString.split(':').map(parseFloat);
+  const secs = Math.floor(seconds);
+  const millisecs = Math.floor((seconds - secs) * 100);
+
+  let formattedTime = '';
+  if (hours > 0) {
+    formattedTime += `${hours}h`;
+  }
+  if (minutes > 0) {
+    formattedTime += `${minutes}m`;
+  }
+  if (secs > 0 || (hours === 0 && minutes === 0)) {
+    formattedTime += `${secs}s`;
+  }
+  if (millisecs > 0 && hours === 0 && minutes === 0) {
+    formattedTime += `${millisecs}ms`;
+  }
+
+  return formattedTime;
+}
+
 export function humanFileSize(bytes: number, si = false) {
   let u,
     b = bytes,

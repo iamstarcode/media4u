@@ -3,7 +3,7 @@ import fs, { readFileSync } from 'node:fs';
 import path from 'path';
 import Spinner from '../utils/spinner';
 import { IMovieResult } from '@consumet/extensions';
-import { CLI, IO } from '@iamstarcode/4u-lib';
+import { CLI, IO, Util } from '@iamstarcode/4u-lib';
 import chalk from 'chalk';
 import ora, { Ora } from 'ora';
 
@@ -257,15 +257,16 @@ export class BaseMovieWebProvider {
               (item) => item.episode_number == episode
             );
 
+            //console.log(foundEpisode, 'fnefnefni');
             const media: any = {
-              title: 'Avatar: The Last Airbender',
+              title: mediaInfo.title,
               releaseYear: 2005,
               tmdbId: mediaInfo.id,
               type: 'show',
               imdbId: mediaInfo.external_ids.imdb_id,
               episode: {
                 number: foundEpisode.episode_number,
-                title: 'The Avatar Returns',
+                title: foundEpisode.name!,
                 tmdbId: foundEpisode.id,
               },
               season: {
@@ -309,28 +310,89 @@ export class BaseMovieWebProvider {
     return this.spinner;
   }
 
-  downloadStreamWithHeaders(streamUrl: any, headers: any, outputFileName: any) {
-    ffmpeg()
-      .input(streamUrl)
-      .seekInput('20:00')
-      .setDuration(10)
-      .addInputOption(
-        '-headers',
-        Object.entries(headers)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\r\n')
-      )
-      .on('error', (err: { message: any }) => {
-        console.error(`Error downloading stream: ${err.message}`);
-      })
-      .on('start', () => {
-        console.log('stated');
-      })
-      .on('end', () => {
-        console.log(`Stream downloaded successfully as ${outputFileName}!`);
-      })
-      .output(outputFileName)
-      .run();
+  async downloadStreamWithHeaders({
+    streamUrl,
+    headers,
+    media,
+  }: {
+    streamUrl: any;
+    headers: any;
+    media: any;
+  }) {
+    const progressBar = new SingleBar({
+      format:
+        '{percentage}% [{bar}] | ETA: {eta}s {downloaded} {speed}/s {timemark}',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+      barsize: 20,
+    });
+
+    let filePath = '';
+
+    if (media.type == 'movie') {
+      filePath = media.name;
+    } else {
+      let episodeString = '';
+      let seasonString = '';
+      if (media.episode.number < 10) {
+        seasonString = '0' + media.episode.number;
+      } else {
+        seasonString = media.season.number + '';
+      }
+      if (media.episode.number! < 10) {
+        episodeString = '0' + media.episode.number;
+      }
+      const dir = path.join(
+        IO.sanitizeDirName(media.title),
+        'S' + seasonString + ''
+      );
+      IO.createDirIfNotFound(dir);
+
+      // console.log(seasonString, episodeString);
+      filePath = path.join(dir, 'E' + episodeString + '.mp4');
+    }
+
+    // `Downloading ${mediaName} Season ${episode.season} Episode ${episode.episodeNumber}`
+
+    await new Promise<void>(async (resolve, reject) => {
+      ffmpeg(streamUrl)
+        .seekInput('20:00')
+        .setDuration(10)
+        .addInputOption(
+          '-headers',
+          Object.entries(headers)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\r\n')
+        )
+        .on('start', () => {
+          console.log(
+            `Downloading ${media.title} Season ${chalk.yellow(
+              media.season.number
+            )} Episode ${chalk.yellow(media.episode.number)}`
+          );
+          progressBar.start(100, 0);
+        })
+        .on('progress', ({ percent, currentKbps, targetSize, timemark }) => {
+          progressBar.update(Math.round(percent), {
+            speed: Util.humanFileSize(currentKbps),
+            downloaded: Util.humanFileSize(targetSize * 1024),
+            timemark: Util.formatTime(timemark),
+          });
+        })
+        .on('error', (err) => {
+          console.error('Error:', err);
+          reject(err);
+        })
+        .on('end', () => {
+          progressBar.update(100);
+          progressBar.stop();
+          console.log(chalk.greenBright.bold(`Download complete \u2713 `)); //
+
+          resolve();
+        })
+        .save(filePath);
+    });
   }
 
   buildHeadersFromStream(stream: Stream): Record<string, string> {
