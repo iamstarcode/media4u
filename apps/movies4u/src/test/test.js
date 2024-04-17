@@ -1,106 +1,80 @@
-// ESM
-import {
-  ANIME,
-  MOVIES,
-  StreamingServers,
-  META,
-  VidCloud,
-} from '@consumet/extensions';
-import { m3u8Download } from '@lzwme/m3u8-dl';
-import path from 'path';
-import { homedir } from 'os';
-import fs from 'node:fs';
+import ffmpeg from 'fluent-ffmpeg';
 
-// <providerName> is the name of the provider you want to use. list of the proivders is below.
-//animepahe
-//x anime saturn
-//flixhq for tv series works
-//goku works too
+// HLS master playlist URL
+const masterPlaylistUrl =
+  'https://pdrz.v421c6e485f.site/_v2-lrld/12a3c523fc105800ed8c394685aeeb0b9b2ea15c00bdbeed0a0e7baea93ece832257df1a4b6125fcfa38c35da05dee86aad28d46d73fc4e9d4e5a53a5277f3d537c512e30918b40d5691a6b039107b126566d1700700379a93d9e159d4e62e9a7942a11c563de701f1ad6d5de2/h/list;ecddaaeae1/ccdeeffb;15a38634f803584ba8926411d7bee906856cab0654b5b7.m3u8';
 
-function getServerEnum(server) {
-  if (server == StreamingServers.AsianLoad) {
-    return StreamingServers.AsianLoad;
-  } else if (server == StreamingServers.Filemoon) {
-    return StreamingServers.Filemoon;
-  } else if (server == StreamingServers.GogoCDN) {
-    return StreamingServers.GogoCDN;
-  } else if (server == StreamingServers.MixDrop) {
-    return StreamingServers.MixDrop;
-  } else if (server == StreamingServers.Mp4Upload) {
-    return StreamingServers.Mp4Upload;
-  } else if (server == StreamingServers.MyCloud) {
-    return StreamingServers.MyCloud;
-  } else if (server == StreamingServers.SmashyStream) {
-    return StreamingServers.SmashyStream;
-  } else if (server == StreamingServers.StreamHub) {
-    return StreamingServers.StreamHub;
-  } else if (server == StreamingServers.StreamSB) {
-    return StreamingServers.StreamSB;
-  } else if (server == StreamingServers.StreamTape) {
-    return StreamingServers.StreamTape;
-  } else if (server == StreamingServers.StreamWish) {
-    return StreamingServers.StreamWish;
-  } else if (server == StreamingServers.UpCloud) {
-    return StreamingServers.UpCloud;
-  } else if (server == StreamingServers.VidCloud) {
-    return StreamingServers.VidCloud;
-  } else if (server == StreamingServers.VidMoly) {
-    return StreamingServers.VidMoly;
-  } else if (server == StreamingServers.VidStreaming) {
-    return StreamingServers.VidStreaming;
-  } else if (server == StreamingServers.VizCloud) {
-    return StreamingServers.VizCloud;
+// Function to fetch and parse HLS master playlist
+async function fetchAndParseMasterPlaylist(url) {
+  const response = await fetch(url);
+  const playlistText = await response.text();
+  const lines = playlistText.split('\n');
+  const variantPlaylists = [];
+  let currentVariant = {};
+  for (const line of lines) {
+    if (line.startsWith('#EXT-X-STREAM-INF')) {
+      if (currentVariant.url) {
+        variantPlaylists.push(currentVariant);
+      }
+      currentVariant = {};
+      const match = line.match(/BANDWIDTH=(\d+),RESOLUTION=(\d+x\d+)/);
+      if (match) {
+        currentVariant.bandwidth = parseInt(match[1]);
+        currentVariant.resolution = match[2];
+      }
+    } else if (line.trim().startsWith('http')) {
+      currentVariant.url = line.trim();
+    }
+  }
+  if (currentVariant.url) {
+    variantPlaylists.push(currentVariant);
+  }
+  return variantPlaylists;
+}
+
+// Function to load HLS variant playlist and extract segment URLs
+async function loadVariantPlaylist(variantUrl) {
+  const response = await fetch(variantUrl);
+  const playlistText = await response.text();
+  const lines = playlistText.split('\n');
+  const segmentUrls = lines.filter((line) => line.trim().startsWith('http'));
+  return segmentUrls;
+}
+
+// Function to load segments from variant playlists
+async function loadSegmentsFromVariants(variantPlaylists) {
+  for (const variant of variantPlaylists) {
+    console.log(
+      `Loading segments from variant with bandwidth ${variant.bandwidth} and resolution ${variant.resolution}`
+    );
+    const segmentUrls = await loadVariantPlaylist(variant.url);
+    // You can handle the segment URLs here (e.g., load each segment using ffmpeg)
+    console.log('Segment URLs:', segmentUrls);
   }
 }
 
-(async () => {
-  const provider = new MOVIES.FlixHQ();
-  //console.log(provider);
+// Main function to load HLS segments
+async function loadHlsSegments() {
+  try {
+    // Fetch and parse HLS master playlist
+    const variantPlaylists = await fetchAndParseMasterPlaylist(
+      masterPlaylistUrl
+    );
 
-  // console.log(typeof getServerEnum('vidmoly'));
-  //console.log(provider);
+    // Load segments from variant playlists
+    console.log(variantPlaylists, 'kkemkdmek');
+    await loadSegmentsFromVariants(variantPlaylists);
 
-  /* provider.search('godfather').then((data) => {
-    console.log(data);
-  }); */
+    console.log('All segments loaded successfully.');
+  } catch (error) {
+    console.error('Error loading segments:', error);
+  }
+}
 
-  /*  provider.fetchMediaInfo('tv/watch-godfather-of-harlem-25445').then((data) => {
-    console.log(data);
-  });
- */
-  /*  provider.fetchEpisodeServers('1125905', 'tv/watch-see-29099').then((data) => {
-    console.log(data);
-  });
- */
-  provider
-    .fetchEpisodeSources(
-      '1177322',
-      'tv/watch-godfather-of-harlem-25445',
-      StreamingServers.UpCloud
-    )
-    .then((data) => {
-      console.log(data);
-    });
+// Run main function
+loadHlsSegments();
 
-  /*   provider.fetchAnimeInfo('overlord-ple-ple-pleiades-3543').then((data) => {
-    console.log(data);
-  }); */
-
-  /*   provider.fetchEpisodeSources('One-Piece-ITA-ep-100').then((data) => {
-    console.log(data);
-  });
- */
-  /*   const c = 'animesaturn';
-  await m3u8Download(
-    'https://xex.stluserehtem.com/_v10/0b98209f3b916128acfbdaf51ff92e1762ae6e17062186078834c91751aae9f321b975965333dc5cb37235ebc7f558f2aab4aca94576ddbd754973016a329b919f6edb227ad7fde1b214ea39e4b2a880874bb373d7ddb661294b07968309283b329aefc1bdb080c4f1be357220e1f8ce3b108f55f4a2fc442e5eb13af62180607eaa5fa6fbb9f7c09aeff5cde4d15476/360/index.m3u8',
-    {
-      showProgress: true,
-      filename: 'test',
-      delCache: true,
-      cacheDir: path.join(homedir(), 'movie4u', c, 'cachex'),
-      headers: { Referer: 'https://rabbitstream.net/embed-4/VLFRnxoWc7mj?z=' },
-    }
-  ); */
-
-  //process.exit(1);
-})();
+/* "https://pdrz.v44381c4b81.site/_v2-nbxe/12a3c523f3105800ed8c394685aeeb0b9b2eaf5c06bdf7b5001a7baea93ece832257df1a4b6125fcfa38c35da05dee86aad28d46d73fc4e9d4e5a13b5271f1d633c651f40b16e84d4194afef3c167b5131358a7c43496789899fb90ec2a1799c2a19a657116ca602/h/list;15a38634f803584ba8926411d7bee906856cab0654b5b7.m3u8"
+"https://pdrz.v44381c4b81.site/_v2-nbxe/12a3c523f3105800ed8c394685aeeb0b9b2eaf5c06bdf7b5001a7baea93ece832257df1a4b6125fcfa38c35da05dee86aad28d46d73fc4e9d4e5a13b5271f1d633c651f40b16e84d4194afef3c167b5131358a7c43496789899fb90ec2a1799c2a19a657116ca602/h/list;15a38634f803584ba8926411d7bee906856cab0654b5b7.m3u8"
+https://pdrz.v44381c4b81.site/_v2-nbxe/12a3c523f3105800ed8c394685aeeb0b9b2eaf5c06bdf7b5001a7baea93ece832257df1a4b6125fcfa38c35da05dee86aad28d46d73fc4e9d4e5a13b5271f1d633c651f40b16e84d4194afef3c167b5131358a7c43496789899fb90ec2a1799c2a19a657116ca602/h/list;ecddaaeae1/ccdeeffb;15a38634f803584ba8926411d7bee906856cab0654b5b7.m3u8
+https://pdrz.v421c6e485f.site/_v2-lrld/12a3c523fc105800ed8c394685aeeb0b9b2ea15c00bdbeed0a0e7baea93ece832257df1a4b6125fcfa38c35da05dee86aad28d46d73fc4e9d4e5a53a5277f3d537c512e30918b40d5691a6b039107b126566d1700700379a93d9e159d4e62e9a7942a11c563de701f1ad6d5de2/h/ecddaaeae1/ccdeeffb;15a38634f803584ba8926411d7bee906856cab0654b5b7.m3u8 */

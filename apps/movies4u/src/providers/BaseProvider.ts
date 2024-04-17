@@ -127,7 +127,7 @@ export class BaseProvider {
 
     const movieInfo = await this.getMediaInfo(media);
 
-    //console.log(movieInfo, 'gfcffscm');
+    //console.log(movieInfo, '//s');
 
     const type = await this.getMediaType({
       type: media.type?.toString(),
@@ -481,7 +481,6 @@ export class BaseProvider {
       for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
         const season = this.options.selectedEpisodes[i];
 
-        console.log(season, 'xcccc');
         if (season.notFound) {
           continue;
         } else {

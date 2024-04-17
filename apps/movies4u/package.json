@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:from' -f -d -q 360 -e s1:3 \"",
-    "vidsrcto": "tsc-watch --onSuccess \"node ./dist/cli.js download 'vidsrcto:avatar' -d -q 360 -e s1:2 \"",
+    "vidsrcto": "tsc-watch --onSuccess \"node ./dist/cli.js download 'vidsrcto:shogun' -f -d -q 360 -e s1:2 \"",
     "mhd": "tsc-watch --onSuccess \"node ./dist/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
     "v": "tsc-watch --onSuccess \"node ./dist/cli.js -h \""
   },
@@ -26,12 +26,14 @@
     "cheerio": "1.0.0-rc.12",
     "cli-progress": "^3.12.0",
     "commander": "^10.0.1",
+    "fluent-ffmpeg": "^2.1.2",
     "lodash": "^4.17.21",
     "node-downloader-helper": "^2.1.7",
     "ora": "^7.0.1",
     "tough-cookie": "^4.1.3"
   },
   "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.24",
     "@types/lodash": "^4.14.200",
     "@types/node": "^20.2.5",
     "@types/tough-cookie": "^4.0.2",
