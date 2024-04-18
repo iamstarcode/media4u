@@ -20,7 +20,7 @@ export function collect(value: any, previous: any[]) {
 }
 
 export const checkFormat = (episodes: any) => {
-  for (let i = 0; i < episodes.selectedEpisodes; i++) {
+  for (let i = 0; i < episodes.episodes; i++) {
     const episode = episodes[i];
     const regexPattern =
       /^s[1-9][0-9]*:([1-9][0-9]*)-?([1-9][0-9]*)?(?:,([1-9][0-9]*)-?([1-9][0-9]*)?)*$/;
@@ -39,12 +39,12 @@ export const checkFormat = (episodes: any) => {
   }
 };
 
-export const handleEpisodes = (selectedEpisodes: string[]) => {
-  checkFormat(selectedEpisodes);
+export const handleEpisodes = (episodes: string[]) => {
+  checkFormat(episodes);
 
   let eps: any[] = [];
-  for (let i = 0; i < selectedEpisodes.length; i++) {
-    const ep = selectedEpisodes[i]; ///'s9:1-5,7,8-9
+  for (let i = 0; i < episodes.length; i++) {
+    const ep = episodes[i]; ///'s9:1-5,7,8-9
     const season = ep.substring(1, ep.indexOf(':'));
     const streamedEpisodes = episodesSeperated(
       ep.substring(ep.indexOf(':') + 1)

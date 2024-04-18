@@ -39,11 +39,12 @@ export interface ISeriesMedia extends IMedia {
 export type Seasons = Pick<ISeriesMedia, 'seasons'>;
 
 export type OptionsType = {
-  selectedEpisodes: any[];
+  episodes: any[];
   debug?: boolean;
   force?: boolean;
   executablePath: string;
   quality: number;
+  subtitle: string;
 };
 
 export type Provider = FlixHQ['name'] | MovieHdWatch['name'];

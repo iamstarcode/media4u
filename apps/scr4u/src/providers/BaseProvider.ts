@@ -390,35 +390,31 @@ export class BaseProvider {
     if (movieInfo.type == TvType.MOVIE) {
       episode.push(movieInfo?.episodes![0]);
     } else if (movieInfo.type == TvType.TVSERIES) {
-      for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
-        const season = this.options.selectedEpisodes[i].season;
+      for (let i = 0; i < this.options.episodes.length; i++) {
+        const season = this.options.episodes[i].season;
         const allSeasonEpisodes = _.filter(
           movieInfo.episodes,
           (o: IMovieEpisode) => o.season == season
         );
 
         if (allSeasonEpisodes.length == 0) {
-          this.options.selectedEpisodes[i].notFound = true;
+          this.options.episodes[i].notFound = true;
         }
 
-        for (
-          let j = 0;
-          j < this.options.selectedEpisodes[i].episodes.length;
-          j++
-        ) {
+        for (let j = 0; j < this.options.episodes[i].episodes.length; j++) {
           const element = _.find(
             allSeasonEpisodes,
             (o: IMovieEpisode) =>
-              o.number == this.options.selectedEpisodes[i].episodes[j]
+              o.number == this.options.episodes[i].episodes[j]
           );
 
           if (!element) {
-            this.options.selectedEpisodes[i].episodes[j] = {
-              number: this.options.selectedEpisodes[i].episodes[j],
+            this.options.episodes[i].episodes[j] = {
+              number: this.options.episodes[i].episodes[j],
               notFound: true,
             };
           } else {
-            this.options.selectedEpisodes[i].episodes[j] = element;
+            this.options.episodes[i].episodes[j] = element;
           }
         }
       }
@@ -463,7 +459,7 @@ export class BaseProvider {
 
       sources = await this.getEpisodeSources({
         _movieInfo: movieInfo,
-        _episode: this.options.selectedEpisodes,
+        _episode: this.options.episodes,
       });
 
       ///
@@ -472,8 +468,8 @@ export class BaseProvider {
       //TODO find a better name
       this.getLinks({ _movieInfo: movieInfo });
 
-      for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
-        const season = this.options.selectedEpisodes[i];
+      for (let i = 0; i < this.options.episodes.length; i++) {
+        const season = this.options.episodes[i];
 
         if (season.notFound) {
           continue;

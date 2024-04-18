@@ -15,7 +15,7 @@ function main() {
     .option('-f, --force', 'Force refecth', false)
     .option('-q, --quality <number>', 'Quality', CLI.pasrseResolution)
     .option('-s, --subtitle <string>', 'Subtitle', CLI.pasrseResolution)
-    .option('-e, --selectedEpisodes <episodes>', 'Episode', CLI.collect, [])
+    .option('-e, --episodes <episodes>', 'Episode', CLI.collect, [])
     .action(downloadAction);
   program.parseAsync(process.argv);
 }

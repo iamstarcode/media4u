@@ -211,8 +211,8 @@ export class BaseMovieWebProvider {
   async handleDownload({ mediaInfo }: { mediaInfo: IMediaInfo }) {
     if (mediaInfo.type == 'movie') {
     } else {
-      for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
-        const season = this.options.selectedEpisodes[i];
+      for (let i = 0; i < this.options.episodes.length; i++) {
+        const season = this.options.episodes[i];
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
