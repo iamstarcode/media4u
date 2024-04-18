@@ -113,11 +113,16 @@ export const inquireMedia = async (medias: any[]) => {
       return medias.map(
         (media: { title: string; type: string; release_date: string }) => {
           const { type, release_date, title } = media;
+          let name = title;
+          if (type) {
+            name += `${name} [${type.toLocaleUpperCase()}]`;
+          }
+          if (release_date) {
+            name += `${name} [${release_date}]`;
+          }
           return {
             value: media,
-            name: `${title} - ${
-              title != undefined ? '[' + type.toLocaleUpperCase() + ']' : ''
-            } ${release_date != undefined ? '[' + release_date + ']' : ''}`,
+            name,
           };
         }
       );
