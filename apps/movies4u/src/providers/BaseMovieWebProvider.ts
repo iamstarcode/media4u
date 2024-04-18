@@ -60,8 +60,8 @@ export class BaseMovieWebProvider {
     query,
     providerName,
   }: MovieWebBaseProviderType) {
-    const url = 'http://localhost:8000';
-    //const url = 'https://tmdb-api-brown.vercel.app';
+    //const url = 'http://localhost:8000';
+    const url = 'https://tmdb-api-brown.vercel.app';
     this.options = options;
     this.searchPath = searchPath;
     this.query = query;
@@ -312,11 +312,8 @@ export class BaseMovieWebProvider {
       );
       IO.createDirIfNotFound(dir);
 
-      // console.log(seasonString, episodeString);
       filePath = path.join(dir, 'E' + episodeString + '.mp4');
     }
-
-    // `Downloading ${mediaName} Season ${episode.season} Episode ${episode.episodeNumber}`
 
     await new Promise<void>(async (resolve, reject) => {
       ffmpeg(streamUrl)

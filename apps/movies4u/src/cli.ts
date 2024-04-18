@@ -2,18 +2,21 @@
 import axios from 'axios';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import { CLI, IO } from '@iamstarcode/4u-lib';
+
+import fs from 'fs';
+import path from 'path';
+
+const { __dirname } = IO.fileDirName(import.meta);
+const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
+const packagejson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 (async () => {
   const program = new Command();
-  const version = '0.0.0.beta-1';
-  /*   const response = await axios.get(`https://registry.npmjs.org/movie4u`);
-  const latestVersion = response.data['dist-tags'].latest;
 
-  if (latestVersion != version) {
-    console.log('New version available: ', chalk.green(latestVersion));
-    console.log('Version installed: ', chalk.red(version));
-  }
- */
+  const version = packagejson.version;
+  await CLI.handleIfNewVersion(version!, 'anim4u');
+
   program
     .name('cli')
     .version(version)

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { OptionsType, Provider } from '../types/index.js';
+import { IBaseProvider, OptionsType, Provider } from '../types/index.js';
 
 import { FlixHQProvider } from '../providers/FlixHQProvider.js';
 import chalk from 'chalk';
@@ -7,33 +7,33 @@ import { MovieHdWatchProvider } from '../providers/MovieHdWatchProvider.js';
 
 import { CLI } from '@iamstarcode/4u-lib';
 import { VidSrcToProvider } from '../providers/VidSrcToProvider.js';
+import _ from 'lodash';
 
-const downloadAction = async (_query: Provider[], options: OptionsType) => {
+type Providers = Pick<IBaseProvider, 'providerName'>;
+const downloadAction = async (
+  _query: [IBaseProvider['providerName'], string],
+  options: OptionsType
+) => {
   const streamedEpisodes = CLI.handleEpisodes(options.selectedEpisodes);
 
   options.selectedEpisodes = streamedEpisodes;
 
-  const query = _query[1];
-  const provider = _query[0];
+  const [providerName, query] = _query;
 
-  const obj = { options, query, provider };
+  const obj = { options, query };
 
   if (options.debug) {
     console.log('args', _query, options);
   }
 
-  if (provider == 'FlixHQ'.toLocaleLowerCase()) {
+  if (providerName == 'flixhq') {
     const provider = new FlixHQProvider(obj);
     await provider.run();
-  } else if (provider == 'MovieHdWatch'.toLocaleLowerCase()) {
+  } else if (providerName == 'moviehdwatch') {
     const provider = new MovieHdWatchProvider(obj);
     await provider.run();
-  } else if (provider.toLocaleLowerCase() == 'vidsrcto') {
-    const vidSrcToprovider = new VidSrcToProvider({
-      options,
-      providerName: 'vidsrcto',
-      query,
-    });
+  } else if (providerName == 'vidsrcto') {
+    const vidSrcToprovider = new VidSrcToProvider(obj);
     await vidSrcToprovider.run();
   } else {
     console.log(chalk.red('Provider not found'));

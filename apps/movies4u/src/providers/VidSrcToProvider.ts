@@ -27,17 +27,16 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
   constructor({
     options,
     query,
-    providerName,
-  }: Omit<IBaseProvider, 'searchPath' | 'provider'>) {
+  }: Omit<IBaseProvider, 'searchPath' | 'provider' | 'providerName'>) {
     super({
       options,
-      providerName,
       query,
       searchPath: path.join(homedir(), 'movie4u', 'VidSrcTo', 'Searches'),
+      providerName: 'vidsrcto',
     });
   }
 
-  async providerDownload({
+  override async providerDownload({
     provider,
     media,
   }: {

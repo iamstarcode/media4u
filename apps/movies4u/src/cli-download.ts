@@ -19,4 +19,3 @@ function main() {
   program.parseAsync(process.argv);
 }
 main();
-//# sourceMappingURL=cli-download.js.map//

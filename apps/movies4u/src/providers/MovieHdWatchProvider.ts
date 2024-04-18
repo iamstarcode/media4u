@@ -5,10 +5,13 @@ import { BaseProvider } from './BaseProvider.js';
 import { homedir } from 'os';
 import path from 'path';
 
-import { IProvider } from '../types/index.js';
+import { IBaseProvider, IProvider } from '../types/index.js';
 
 export class MovieHdWatchProvider extends BaseProvider {
-  constructor({ options, query }: IProvider) {
+  constructor({
+    options,
+    query,
+  }: Omit<IBaseProvider, 'provider' | 'searchPath' | 'providerName'>) {
     super({
       options,
       query,
