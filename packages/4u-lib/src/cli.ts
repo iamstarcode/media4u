@@ -99,7 +99,7 @@ export const handleIfNewVersion = async (version: string, pkgName: string) => {
   const data = await response.json();
   const latestVersion = data['dist-tags'].latest;
 
-  if (latestVersion != version) {
+  if (latestVersion !== version) {
     console.log('New version available: ', chalk.green(latestVersion));
     console.log('Version installed: ', chalk.red(version));
   }

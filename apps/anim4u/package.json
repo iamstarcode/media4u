@@ -22,7 +22,7 @@
   "dependencies": {
     "@consumet/extensions": "^1.5.6",
     "@iamstarcode/4u-lib": "workspace:^",
-    "@lzwme/m3u8-dl": "^0.0.6",
+    "@lzwme/m3u8-dl": "github:iamstarcode/m3u8-dl#hot-fix",
     "axios": "^1.4.0",
     "axios-cookiejar-support": "^4.0.7",
     "chalk": "^5.2.0",

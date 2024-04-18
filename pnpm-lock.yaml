@@ -27,8 +27,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/4u-lib
       '@lzwme/m3u8-dl':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: github:iamstarcode/m3u8-dl#hot-fix
+        version: github.com/iamstarcode/m3u8-dl/bbc8790f049cc5de2c34c375d8fe76c56df6a049
       axios:
         specifier: ^1.4.0
         version: 1.6.2
@@ -510,6 +510,25 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@lzwme/fe-utils@1.7.2:
+    resolution: {integrity: sha512-Tq8GVczjShoJE0b5RzsQ3hxBH+71QSt4Ol38oksuS8Vpn/yWnd1+HjolzDa+ApN2jPzNfe0Wx++vjp4IyZ4CyA==}
+    engines: {node: '>=14.18.0'}
+    peerDependencies:
+      '@iarna/toml': ^2.2.5
+      compressing: ^1.10.0
+      windows-process-tree: ^0.4.0
+    peerDependenciesMeta:
+      '@iarna/toml':
+        optional: true
+      compressing:
+        optional: true
+      windows-process-tree:
+        optional: true
+    dependencies:
+      console-log-colors: 0.4.0
+      tslib: 2.6.2
+    dev: false
+
   /@lzwme/m3u8-dl@0.0.6:
     resolution: {integrity: sha512-gNetEQUMcE7SNgVbQxzKZ0gY92XL62vv+imzbmUSJ+D1sPYriTLCWodpzAA6zR8nc0CPW390j1Reqk0jiGI2Ag==}
     engines: {node: '>=14.18'}
@@ -925,6 +944,11 @@ packages:
   /commander@11.1.0:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
     engines: {node: '>=16'}
+    dev: false
+
+  /commander@12.0.0:
+    resolution: {integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==}
+    engines: {node: '>=18'}
     dev: false
 
   /compare-func@2.0.0:
@@ -2418,3 +2442,23 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  github.com/iamstarcode/m3u8-dl/bbc8790f049cc5de2c34c375d8fe76c56df6a049:
+    resolution: {tarball: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049}
+    name: '@lzwme/m3u8-dl'
+    version: 0.0.7
+    engines: {node: '>=14.18'}
+    hasBin: true
+    prepare: true
+    requiresBuild: true
+    dependencies:
+      '@lzwme/fe-utils': 1.7.2
+      commander: 12.0.0
+      console-log-colors: 0.4.0
+      enquirer: 2.4.1
+      m3u8-parser: 7.1.0
+    transitivePeerDependencies:
+      - '@iarna/toml'
+      - compressing
+      - windows-process-tree
+    dev: false
