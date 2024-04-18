@@ -45,6 +45,7 @@ export type OptionsType = {
   executablePath: string;
   quality: number;
   subtitle: string;
+  subtitleOnly: boolean;
 };
 
 export type Provider = FlixHQ['name'] | MovieHdWatch['name'];

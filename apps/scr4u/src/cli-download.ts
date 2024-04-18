@@ -14,7 +14,8 @@ function main() {
     .option('-d, --debug', 'Debugging', false)
     .option('-f, --force', 'Force refecth', false)
     .option('-q, --quality <number>', 'Quality', CLI.pasrseResolution)
-    .option('-s, --subtitle <string>', 'Subtitle', CLI.pasrseResolution)
+    .option('-s, --subtitle <string>', 'Subtitle language')
+    .option('-so, --subtitleOnly', 'Downlod Subtitle language only', false)
     .option('-e, --episodes <episodes>', 'Episode', CLI.collect, [])
     .action(downloadAction);
   program.parseAsync(process.argv);

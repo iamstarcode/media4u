@@ -252,18 +252,38 @@ export class BaseMovieWebProvider {
               )} Episode ${chalk.yellow(media.episode.number)} sources`
             );
             await this.providerDownload({ provider: this.providerName, media });
-
-            console.log(
-              chalk.greenBright.bold(
-                `${chalk.blue('[INFO]')}Download complete \u2713 `
-              )
-            );
           }
         }
       }
     }
 
     process.exit(0);
+  }
+
+  async downloadSubtitle(captions: any[], media: any) {
+    //console.log(captions, 'fhuehfueu');
+    if (this.options.subtitle) {
+      // const captions = output.stream.captions;
+      const subtitle = captions.find(
+        (subtitle: { language: any }) =>
+          subtitle.language === this.options.subtitle
+      );
+      if (subtitle) {
+        const { filename, saveDir } = IO.getFileAndFolderNameFromMedia(media);
+        //console.log(subtitle, 'ekrrkerke');
+        IO.downloadFile(subtitle.url, filename, saveDir);
+        console.log(filename, saveDir);
+      } else {
+        console.log(
+          chalk.yellow(
+            `Subtitle with language '${this.options.subtitle}' not dound`
+          )
+        );
+      }
+    } else {
+      console.log('Please choose a subtile with -s option');
+      process.exit(0);
+    }
   }
 
   getSpinner() {

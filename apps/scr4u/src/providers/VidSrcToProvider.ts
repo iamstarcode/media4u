@@ -19,6 +19,7 @@ import {
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { CLI, IO } from '@iamstarcode/4u-lib';
 import { appPath } from '../config/constants.js';
+import chalk from 'chalk';
 
 interface StreamInfo {
   resolution: string;
@@ -55,8 +56,6 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
       sourceOrder: [provider],
     });
 
-    console.log(output.stream.captions, 'kjkjiji');
-
     if (output.stream) {
       const res = await this.extractResolutionAndUrl(output.stream.playlist);
       const closestStream = this.findClosestResolution(
@@ -75,14 +74,21 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
         titleToDir
       );
 
-      //sxmkemikfrf cbd cbdc
-      ///ndhcbhfvbtrhugghtrbgh//sjsj
-      await CLI.donwloadStream({
-        url: closestStream?.url!,
-        cacheDir,
-        headers: output.stream.headers,
-        media,
-      });
+      if (this.options.subtitleOnly) {
+        this.downloadSubtitle(output.stream.captions, media);
+      } else {
+        await IO.downloadStream({
+          url: closestStream?.url!,
+          cacheDir,
+          headers: output.stream.headers,
+          media,
+        });
+        console.log(
+          chalk.greenBright.bold(
+            `${chalk.blue('[INFO]')}Download complete \u2713 `
+          )
+        );
+      }
     }
   }
 
