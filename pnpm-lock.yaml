@@ -91,8 +91,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/4u-lib
       '@lzwme/m3u8-dl':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: github:iamstarcode/m3u8-dl#hot-fix
+        version: github.com/iamstarcode/m3u8-dl/198ded51dca63360f4c13c5e666fceee424d324e
       '@movie-web/providers':
         specifier: ^2.3.0
         version: 2.3.0
@@ -152,6 +152,76 @@ importers:
         specifier: ^5.0.4
         version: 5.2.2
 
+  apps/scr4u:
+    dependencies:
+      '@consumet/extensions':
+        specifier: ^1.5.2
+        version: 1.5.6
+      '@iamstarcode/4u-lib':
+        specifier: workspace:^
+        version: link:../../packages/4u-lib
+      '@lzwme/m3u8-dl':
+        specifier: github:iamstarcode/m3u8-dl#hot-fix
+        version: github.com/iamstarcode/m3u8-dl/198ded51dca63360f4c13c5e666fceee424d324e
+      '@movie-web/providers':
+        specifier: ^2.3.0
+        version: 2.3.0
+      axios:
+        specifier: ^1.4.0
+        version: 1.6.2
+      axios-cookiejar-support:
+        specifier: ^4.0.7
+        version: 4.0.7(axios@1.6.2)(tough-cookie@4.1.3)
+      chalk:
+        specifier: ^5.2.0
+        version: 5.3.0
+      cheerio:
+        specifier: 1.0.0-rc.12
+        version: 1.0.0-rc.12
+      cli-progress:
+        specifier: ^3.12.0
+        version: 3.12.0
+      commander:
+        specifier: ^10.0.1
+        version: 10.0.1
+      fluent-ffmpeg:
+        specifier: ^2.1.2
+        version: 2.1.2
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+      node-downloader-helper:
+        specifier: ^2.1.7
+        version: 2.1.9
+      ora:
+        specifier: ^7.0.1
+        version: 7.0.1
+      tough-cookie:
+        specifier: ^4.1.3
+        version: 4.1.3
+    devDependencies:
+      '@types/fluent-ffmpeg':
+        specifier: ^2.1.24
+        version: 2.1.24
+      '@types/lodash':
+        specifier: ^4.14.200
+        version: 4.14.201
+      '@types/node':
+        specifier: ^20.2.5
+        version: 20.12.7
+      '@types/tough-cookie':
+        specifier: ^4.0.2
+        version: 4.0.5
+      ts-node:
+        specifier: ^10.9.1
+        version: 10.9.1(@types/node@20.12.7)(typescript@5.2.2)
+      tsc-watch:
+        specifier: ^6.0.4
+        version: 6.0.4(typescript@5.2.2)
+      typescript:
+        specifier: ^5.0.4
+        version: 5.2.2
+
   packages/4u-lib:
     dependencies:
       '@consumet/extensions':
@@ -160,6 +230,9 @@ importers:
       '@inquirer/select':
         specifier: ^2.3.1
         version: 2.3.1
+      '@lzwme/m3u8-dl':
+        specifier: github:iamstarcode/m3u8-dl#hot-fix
+        version: github.com/iamstarcode/m3u8-dl/198ded51dca63360f4c13c5e666fceee424d324e
       chalk:
         specifier: ^5.2.0
         version: 5.3.0
@@ -494,22 +567,6 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@lzwme/fe-utils@1.5.6:
-    resolution: {integrity: sha512-7A1rLLAkj1NsxQ87NR5xE3mZXOg03zzAdV/KYer5Ho9qNEF4j6ou79wLWpuhulkmFh3L7lb2Il6UGEGrTnRkjQ==}
-    engines: {node: '>=14.18.0'}
-    peerDependencies:
-      compressing: ^1.7.0
-      windows-process-tree: ^0.4.0
-    peerDependenciesMeta:
-      compressing:
-        optional: true
-      windows-process-tree:
-        optional: true
-    dependencies:
-      console-log-colors: 0.4.0
-      tslib: 2.6.2
-    dev: false
-
   /@lzwme/fe-utils@1.7.2:
     resolution: {integrity: sha512-Tq8GVczjShoJE0b5RzsQ3hxBH+71QSt4Ol38oksuS8Vpn/yWnd1+HjolzDa+ApN2jPzNfe0Wx++vjp4IyZ4CyA==}
     engines: {node: '>=14.18.0'}
@@ -527,21 +584,6 @@ packages:
     dependencies:
       console-log-colors: 0.4.0
       tslib: 2.6.2
-    dev: false
-
-  /@lzwme/m3u8-dl@0.0.6:
-    resolution: {integrity: sha512-gNetEQUMcE7SNgVbQxzKZ0gY92XL62vv+imzbmUSJ+D1sPYriTLCWodpzAA6zR8nc0CPW390j1Reqk0jiGI2Ag==}
-    engines: {node: '>=14.18'}
-    hasBin: true
-    dependencies:
-      '@lzwme/fe-utils': 1.5.6
-      commander: 11.1.0
-      console-log-colors: 0.4.0
-      enquirer: 2.4.1
-      m3u8-parser: 7.1.0
-    transitivePeerDependencies:
-      - compressing
-      - windows-process-tree
     dev: false
 
   /@movie-web/providers@2.3.0:
@@ -886,11 +928,6 @@ packages:
       string-width: 4.2.3
     dev: false
 
-  /cli-spinners@2.9.1:
-    resolution: {integrity: sha512-jHgecW0pxkonBJdrKsqxgRX9AcG+u/5k0Q7WPDfi8AogLAdwxEkyYYNWwZ5GvVFoFx2uiY1eNcSK00fh+1+FyQ==}
-    engines: {node: '>=6'}
-    dev: false
-
   /cli-spinners@2.9.2:
     resolution: {integrity: sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg==}
     engines: {node: '>=6'}
@@ -939,11 +976,6 @@ packages:
   /commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
-    dev: false
-
-  /commander@11.1.0:
-    resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
-    engines: {node: '>=16'}
     dev: false
 
   /commander@12.0.0:
@@ -1790,7 +1822,7 @@ packages:
     dependencies:
       chalk: 5.3.0
       cli-cursor: 4.0.0
-      cli-spinners: 2.9.1
+      cli-spinners: 2.9.2
       is-interactive: 2.0.0
       is-unicode-supported: 1.3.0
       log-symbols: 5.1.0
@@ -2210,6 +2242,37 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /ts-node@10.9.1(@types/node@20.12.7)(typescript@5.2.2):
+    resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 20.12.7
+      acorn: 8.11.2
+      acorn-walk: 8.3.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.2.2
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
+
   /ts-node@10.9.1(@types/node@20.5.1)(typescript@5.2.2):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
@@ -2443,13 +2506,31 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
+  github.com/iamstarcode/m3u8-dl/198ded51dca63360f4c13c5e666fceee424d324e:
+    resolution: {tarball: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/198ded51dca63360f4c13c5e666fceee424d324e}
+    name: '@lzwme/m3u8-dl'
+    version: 0.0.7
+    engines: {node: '>=14.18'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@lzwme/fe-utils': 1.7.2
+      commander: 12.0.0
+      console-log-colors: 0.4.0
+      enquirer: 2.4.1
+      m3u8-parser: 7.1.0
+    transitivePeerDependencies:
+      - '@iarna/toml'
+      - compressing
+      - windows-process-tree
+    dev: false
+
   github.com/iamstarcode/m3u8-dl/bbc8790f049cc5de2c34c375d8fe76c56df6a049:
     resolution: {tarball: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049}
     name: '@lzwme/m3u8-dl'
     version: 0.0.7
     engines: {node: '>=14.18'}
     hasBin: true
-    prepare: true
     requiresBuild: true
     dependencies:
       '@lzwme/fe-utils': 1.7.2

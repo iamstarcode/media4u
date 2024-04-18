@@ -11,12 +11,7 @@ import {
 } from '@consumet/extensions';
 import { readFileSync } from 'fs';
 import path from 'path';
-import {
-  IBaseProvider,
-  ISupportedProvider,
-  OptionsType,
-  Provider,
-} from '../types';
+import { IBaseProvider, ISupportedProvider, OptionsType } from '../types';
 import fs from 'node:fs';
 
 import ora, { Ora } from 'ora';
@@ -33,7 +28,6 @@ import {
   makeStandardFetcher,
   targets,
 } from '@movie-web/providers';
-import { BaseParser } from '@consumet/extensions/dist/models';
 
 export interface IHandleMediaDownload {
   movieInfo: IMovieInfo;

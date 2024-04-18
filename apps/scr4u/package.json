@@ -1,13 +1,13 @@
 {
   "bin": "./dist/cli.js",
-  "name": "movie4u",
-  "version": "0.0.0.beta-1",
+  "name": "scr4u",
+  "version": "0.0.0-beta1",
   "description": "",
   "main": "dist/cli.js",
   "scripts": {
     "build": "tsc",
     "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:from' -f -d -q 360 -e s1:3 \"",
-    "vidsrcto": "tsc-watch --onSuccess \"node ./dist/cli.js download 'vidsrcto:avatar' -f -d -q 360 -e s1:2 \"",
+    "vidsrcto": "tsc-watch --onSuccess \"node ./dist/cli.js download 'vidsrcto:evil' -d -q 720 -e s1:2 \"",
     "mhd": "tsc-watch --onSuccess \"node ./dist/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
     "v": "tsc-watch --onSuccess \"node ./dist/cli.js -h \""
   },
@@ -18,7 +18,7 @@
   "dependencies": {
     "@consumet/extensions": "^1.5.2",
     "@iamstarcode/4u-lib": "workspace:^",
-    "@lzwme/m3u8-dl": "^0.0.6",
+    "@lzwme/m3u8-dl": "github:iamstarcode/m3u8-dl#hot-fix",
     "@movie-web/providers": "^2.3.0",
     "axios": "^1.4.0",
     "axios-cookiejar-support": "^4.0.7",

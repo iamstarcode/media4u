@@ -17,6 +17,8 @@ import {
   targets,
 } from '@movie-web/providers';
 import { m3u8Download } from '@lzwme/m3u8-dl';
+import { CLI, IO } from '@iamstarcode/4u-lib';
+import { appPath } from '../config/constants.js';
 
 interface StreamInfo {
   resolution: string;
@@ -31,7 +33,7 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
     super({
       options,
       query,
-      searchPath: path.join(homedir(), 'movie4u', 'VidSrcTo', 'Searches'),
+      searchPath: path.join(appPath, 'VidSrcTo', 'Searches'),
       providerName: 'vidsrcto',
     });
   }
@@ -53,6 +55,8 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
       sourceOrder: [provider],
     });
 
+    console.log(output.stream.captions, 'kjkjiji');
+
     if (output.stream) {
       const res = await this.extractResolutionAndUrl(output.stream.playlist);
       const closestStream = this.findClosestResolution(
@@ -60,8 +64,22 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
         res
       );
 
-      await this.downloadStreamWithHeaders({
-        streamUrl: closestStream?.url,
+      const titleToDir = IO.sanitizeDirName(
+        Buffer.from(closestStream?.url!).toString('base64').substring(0, 24)
+      );
+
+      const cacheDir = path.join(
+        appPath,
+        this.providerName,
+        'cache',
+        titleToDir
+      );
+
+      //sxmkemikfrf cbd cbdc
+      ///ndhcbhfvbtrhugghtrbgh//sjsj
+      await CLI.donwloadStream({
+        url: closestStream?.url!,
+        cacheDir,
         headers: output.stream.headers,
         media,
       });

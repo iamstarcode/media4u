@@ -65,10 +65,10 @@ export function sanitizeDirName(folderName: string) {
 
 export function sanitizeFileName(fileName: string) {
   // Define a regular expression to match special characters
-  const specialCharsRegex = /[*\\/:?"><|]/g;
+  const specialCharsRegex = /[<>:"\/\\|?*\x00-\x1F\s]/g;
 
   // Replace special characters with a safe character, e.g., an underscore
-  const sanitizedFileName = fileName.replace(specialCharsRegex, '-');
+  const sanitizedFileName = fileName.replace(specialCharsRegex, '.');
 
   return sanitizedFileName;
 }

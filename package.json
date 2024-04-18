@@ -6,9 +6,9 @@
     "animepahe": "pnpm -F @iamstarcode/4u-lib build && pnpm -F anim4u animepahe",
     "animepahe2": "pnpm -F @iamstarcode/4u-lib build && pnpm -F anim4u animepahe2",
     "gogo": "pnpm -F @iamstarcode/4u-lib build && pnpm -F anim4u gogo",
-    "flix": "pnpm -F @iamstarcode/4u-lib build && pnpm -F movie4u flixhq",
-    "mhd": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter movie4u mhd",
-    "vidsrcto": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter movie4u vidsrcto",
+    "flix": "pnpm -F @iamstarcode/4u-lib build && pnpm -F scr4u flixhq",
+    "mhd": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter scr4u mhd",
+    "vidsrcto": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter scr4u vidsrcto",
     "prepare": "husky install"
   },
   "private": true,

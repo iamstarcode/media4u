@@ -1,27 +1,13 @@
 import { MovieWebBaseProviderType, OptionsType } from '../types';
 import fs, { readFileSync } from 'node:fs';
 import path from 'path';
-import Spinner from '../utils/spinner';
-import { IMovieResult } from '@consumet/extensions';
-import { CLI, IO, Util } from '@iamstarcode/4u-lib';
+import { CLI, IO } from '@iamstarcode/4u-lib';
 import chalk from 'chalk';
 import ora, { Ora } from 'ora';
 
-import ffmpeg from 'fluent-ffmpeg';
-
 import { SingleBar } from 'cli-progress';
 
-import {
-  targets,
-  makeProviders,
-  makeStandardFetcher,
-  SourceRunnerOptions,
-  Stream,
-  EmbedScrapeContext,
-  NotFoundError,
-} from '@movie-web/providers';
-import { title } from 'node:process';
-import { m3u8Download } from '@lzwme/m3u8-dl';
+import { homedir } from 'node:os';
 
 interface IMediResult {
   external_ids: any;
@@ -72,6 +58,25 @@ export class BaseMovieWebProvider {
 
   //Overrides
   async providerDownload({}: { provider: string; media: any }): Promise<void> {}
+  async downloadStream({}: { provider: string; media: any }): Promise<void> {}
+  async run() {
+    const medias: IMediResult[] = await this.getMedia();
+
+    let media: IMediResult = await CLI.inquireMedia(medias);
+
+    if (!this.options.quality) {
+      this.options.quality = await CLI.inquireQuality();
+    } else {
+      this.options.quality = this.options.quality;
+    }
+
+    const mediaInfo: IMediaInfo = await this.getMediaInfo(media);
+
+    await this.handleDownload({ mediaInfo });
+
+    if (mediaInfo.type == 'tv') {
+    }
+  }
 
   async getMedia(): Promise<IMediResult[]> {
     if (this.options.force) {
@@ -203,35 +208,11 @@ export class BaseMovieWebProvider {
     return mediaInfo;
   }
 
-  async run() {
-    const medias: IMediResult[] = await this.getMedia();
-
-    let media: IMediResult = await CLI.inquireMedia(medias);
-
-    let quality;
-
-    if (!this.options.quality) {
-      quality = await CLI.inquireQuality();
-    } else {
-      quality = this.options.quality;
-    }
-
-    ////
-    //
-    const mediaInfo: IMediaInfo = await this.getMediaInfo(media);
-
-    await this.handleDownload({ mediaInfo });
-
-    if (mediaInfo.type == 'tv') {
-    }
-  }
-
   async handleDownload({ mediaInfo }: { mediaInfo: IMediaInfo }) {
     if (mediaInfo.type == 'movie') {
     } else {
       for (let i = 0; i < this.options.selectedEpisodes.length; i++) {
         const season = this.options.selectedEpisodes[i];
-
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
@@ -261,98 +242,28 @@ export class BaseMovieWebProvider {
               },
               season: {
                 number: seasonData.season_number,
-                title: 'Book One: Water',
                 tmdbId: seasonData.id,
               },
             };
 
+            console.log(
+              `Searching for ${chalk.yellow(media.title)} Season ${chalk.yellow(
+                media.episode.number
+              )} Episode ${chalk.yellow(media.episode.number)} sources`
+            );
             await this.providerDownload({ provider: this.providerName, media });
+
+            console.log(
+              chalk.greenBright.bold(
+                `${chalk.blue('[INFO]')}Download complete \u2713 `
+              )
+            );
           }
         }
       }
     }
-  }
 
-  async downloadStreamWithHeaders({
-    streamUrl,
-    headers,
-    media,
-  }: {
-    streamUrl: any;
-    headers: any;
-    media: any;
-  }) {
-    const progressBar = new SingleBar({
-      format:
-        '{percentage}% [{bar}] | ETA: {eta}s {downloaded} {speed}/s {timemark}',
-      barCompleteChar: '\u2588',
-      barIncompleteChar: '\u2591',
-      hideCursor: true,
-      barsize: 20,
-    });
-
-    let filePath = '';
-
-    if (media.type == 'movie') {
-      filePath = media.name;
-    } else {
-      let episodeString = '';
-      let seasonString = '';
-      if (media.episode.number < 10) {
-        seasonString = '0' + media.episode.number;
-      } else {
-        seasonString = media.season.number + '';
-      }
-      if (media.episode.number! < 10) {
-        episodeString = '0' + media.episode.number;
-      }
-      const dir = path.join(
-        IO.sanitizeDirName(media.title),
-        'S' + seasonString + ''
-      );
-      IO.createDirIfNotFound(dir);
-
-      filePath = path.join(dir, 'E' + episodeString + '.mp4');
-    }
-
-    await new Promise<void>(async (resolve, reject) => {
-      ffmpeg(streamUrl)
-        .seekInput('20:00')
-        .setDuration(10)
-        .addInputOption(
-          '-headers',
-          Object.entries(headers)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join('\r\n')
-        )
-        .on('start', () => {
-          console.log(
-            `Downloading ${media.title} Season ${chalk.yellow(
-              media.season.number
-            )} Episode ${chalk.yellow(media.episode.number)}`
-          );
-          progressBar.start(100, 0);
-        })
-        .on('progress', ({ percent, currentKbps, targetSize, timemark }) => {
-          progressBar.update(Math.round(percent), {
-            speed: Util.humanFileSize(currentKbps),
-            downloaded: Util.humanFileSize(targetSize * 1024),
-            timemark: Util.formatTime(timemark),
-          });
-        })
-        .on('error', (err) => {
-          console.error('Error:', err);
-          reject(err);
-        })
-        .on('end', () => {
-          progressBar.update(100);
-          progressBar.stop();
-          console.log(chalk.greenBright.bold(`Download complete \u2713 `)); //
-
-          resolve();
-        })
-        .save(filePath);
-    });
+    process.exit(0);
   }
 
   getSpinner() {
