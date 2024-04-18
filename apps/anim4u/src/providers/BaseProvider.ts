@@ -62,7 +62,7 @@ export class BaseProvider {
 
   async run() {
     let medias: IAnimeResult[] = await this.getAnime();
-    /// console.log(medias);
+    //console.log(medias);
     let media: IAnimeResult = await CLI.inquireMedia(medias);
 
     let quality;
@@ -122,7 +122,6 @@ export class BaseProvider {
 
     do {
       const data = await this.provider.search(this.query, page);
-
       if (data.hasNextPage) {
         hasNextPage = true;
         page++;

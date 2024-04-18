@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "animepahe": "tsc-watch --onSuccess \"node ./build/src/cli.js download 'animepahe:enen' -f -d -q 720 -e 6 \"",
     "animepahe2": "tsc-watch --onSuccess \"node ./build/src/cli.js download 'animepahe2:dr stone' -f -d -q 720 -e 24 \"",
-    "gogo": "tsc-watch --onSuccess \"node ./build/src/cli.js download 'gogoanime:demon slayer' -f -d -q 720 -e 6 \"",
+    "gogo": "tsc-watch --onSuccess \"node ./build/src/cli.js download 'gogoanime:tokyo ghoul' -f -d -q 720 -e 1 \"",
     "animesaturn": "tsc-watch --onSuccess \"node ./build/src/cli.js download 'animesaturn:one piece' -d -q 144 -e 1075 \"",
     "dev:clear": "tsc-watch --onSuccess \"node ./build/src/cli.js clear all \"",
     "dev:help": "tsc-watch --onSuccess \"node ./build/src/cli.js download -h \"",
