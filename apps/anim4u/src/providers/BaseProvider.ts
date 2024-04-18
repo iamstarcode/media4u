@@ -415,12 +415,13 @@ export class BaseProvider {
       'E' + episode
     );
 
+    console.log(saveDir, 'hgh');
     IO.createDirIfNotFound(cacheDir);
 
     await m3u8Download(choosen.url, {
       showProgress: true,
       filename: `E${episode}`,
-      saveDir: `'${saveDir}'`,
+      saveDir: `${saveDir}`,
       cacheDir,
       headers: sources.headers,
     });
