@@ -251,6 +251,9 @@ importers:
       node-downloader-helper:
         specifier: ^2.1.7
         version: 2.1.9
+      subsrt-ts:
+        specifier: ^2.1.2
+        version: 2.1.2
     devDependencies:
       '@types/lodash':
         specifier: ^4.14.201
@@ -2199,6 +2202,11 @@ packages:
     dependencies:
       min-indent: 1.0.1
     dev: true
+
+  /subsrt-ts@2.1.2:
+    resolution: {integrity: sha512-45yNlK42Z0pz4lAaNYbR5P60M2jmHl+gfAaiJxDIXsXXqoE7TkDCzl/00HgWyZXKkdIU6s8FiNtRvrlOZb+5Qg==}
+    hasBin: true
+    dev: false
 
   /supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}

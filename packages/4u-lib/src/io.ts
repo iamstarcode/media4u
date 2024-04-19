@@ -9,6 +9,13 @@ import chalk from 'chalk';
 import { humanFileSize } from './util.js';
 import { DownloaderHelper } from 'node-downloader-helper';
 import { m3u8Download } from '@lzwme/m3u8-dl';
+import { convert, detect, parse } from 'subsrt-ts';
+
+import Subtitle from 'subsrt-ts';
+
+import { ContentCaption } from 'subsrt-ts/dist/types/handler';
+
+export type CaptionCueType = ContentCaption;
 
 export function fileDirName(meta: any) {
   const __filename = fileURLToPath(meta.url);
@@ -135,19 +142,31 @@ export async function downloadFile(
   });
 }
 
-async function downloadSubtitle(url: string, filePath: fs.PathLike) {
+export async function downloadSubtitle(url: string, filePath: fs.PathLike) {
   try {
-    //const outputFilepath = 'path/to/your/folder/your_movie.vtt';
-    const response = await fetch(url);
+    const data = await fetch(url).then((v) => v.text());
+    if (!data) throw new Error('failed to get caption data');
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const subtitleContent = await response.text();
-    fs.writeFileSync(filePath, subtitleContent, 'utf8');
+    const output = convertSubtitlesToSrt(data);
+
+    fs.writeFileSync(filePath + '.' + 'srt', output, {
+      encoding: 'utf8',
+    });
   } catch (error) {
     console.log(error);
   }
+}
+
+export function convertSubtitlesToSrt(text: string): string {
+  const textTrimmed = text.trim();
+  if (textTrimmed === '') {
+    throw new Error('Given text is empty');
+  }
+  const srt = convert(textTrimmed, 'srt');
+  if (detect(srt) === '') {
+    throw new Error('Invalid subtitle format');
+  }
+  return srt;
 }
 
 export function getFileAndFolderNameFromMedia(media: {
@@ -165,15 +184,15 @@ export function getFileAndFolderNameFromMedia(media: {
   ) {
     let episodeString = 'E';
     let seasonString = 'S';
-    if (media.episode.number < 10) {
-      seasonString += '0' + media.episode.number;
+    if (media.season.number < 10) {
+      seasonString += '0' + media.season.number;
     } else {
       seasonString += media.season.number;
     }
-    if (media.episode.number! < 10) {
+    if (media.episode.number < 10) {
       episodeString += '0' + media.episode.number;
     } else {
-      seasonString += media.episode.number;
+      episodeString += media.episode.number;
     }
     saveDir = path.join(sanitizeDirName(media.title), seasonString);
     createDirIfNotFound(saveDir);
@@ -205,6 +224,7 @@ export async function downloadStream({
   };
 }) {
   const { filename, saveDir } = getFileAndFolderNameFromMedia(media);
+
   await m3u8Download(url, {
     showProgress: true,
     filename,

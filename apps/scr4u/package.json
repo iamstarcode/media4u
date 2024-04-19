@@ -1,15 +1,15 @@
 {
-  "bin": "./dist/cli.js",
+  "bin": "./build/cli.js",
   "name": "scr4u",
   "version": "0.0.0-beta1",
   "description": "",
-  "main": "dist/cli.js",
+  "main": "build/cli.js",
   "scripts": {
     "build": "tsc",
-    "flixhq": "tsc-watch --onSuccess \"node ./dist/cli.js download 'flixhq:from' -f -d -q 360 -e s1:3 \"",
-    "vidsrcto": "tsc-watch --onSuccess \"node ./dist/cli.js download 'vidsrcto:evil' -d -so -s en -q 720 -e s1:2 \"",
-    "mhd": "tsc-watch --onSuccess \"node ./dist/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
-    "v": "tsc-watch --onSuccess \"node ./dist/cli.js -h \""
+    "flixhq": "tsc-watch --onSuccess \"node ./build/cli.js download 'flixhq:from' -f -d -q 360 -e s1:3 \"",
+    "vidsrcto": "tsc-watch --onSuccess \"node ./build/cli.js download 'vidsrcto:euphoria' -d -so -s en -q 720 -e s1:1-2 \"",
+    "mhd": "tsc-watch --onSuccess \"node ./build/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
+    "v": "tsc-watch --onSuccess \"node ./build/cli.js -h \""
   },
   "keywords": [],
   "author": "",

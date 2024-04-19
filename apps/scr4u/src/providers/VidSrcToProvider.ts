@@ -75,7 +75,8 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
       );
 
       if (this.options.subtitleOnly) {
-        this.downloadSubtitle(output.stream.captions, media);
+        ////
+        await this.downloadSubtitle(output.stream.captions, media);
       } else {
         await IO.downloadStream({
           url: closestStream?.url!,
@@ -83,6 +84,9 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
           headers: output.stream.headers,
           media,
         });
+        if (this.options.subtitle) {
+          await this.downloadSubtitle(output.stream.captions, media);
+        }
         console.log(
           chalk.greenBright.bold(
             `${chalk.blue('[INFO]')}Download complete \u2713 `

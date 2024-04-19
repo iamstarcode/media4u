@@ -415,7 +415,6 @@ export class BaseProvider {
       'E' + episode
     );
 
-    console.log(saveDir, 'hgh');
     IO.createDirIfNotFound(cacheDir);
 
     await m3u8Download(choosen.url, {

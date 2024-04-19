@@ -213,6 +213,7 @@ export class BaseMovieWebProvider {
     } else {
       for (let i = 0; i < this.options.episodes.length; i++) {
         const season = this.options.episodes[i];
+        //console.log(season, 'frhurhfurhfu');
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
@@ -223,10 +224,13 @@ export class BaseMovieWebProvider {
           const seasonData = await response.json();
           const allSeasonEpisodes: any[] = seasonData.episodes;
 
+          //
           for (let j = 0; j < season.episodes.length; j++) {
             const episode = season.episodes[j];
+            //console.log(episode);
+            // console.log(allSeasonEpisodes, 'all');
             const foundEpisode = allSeasonEpisodes.find(
-              (item) => item.episode_number == episode
+              (item) => item.episode_number === episode
             );
 
             const media: any = {
@@ -248,8 +252,8 @@ export class BaseMovieWebProvider {
 
             console.log(
               `Searching for ${chalk.yellow(media.title)} Season ${chalk.yellow(
-                media.episode.number
-              )} Episode ${chalk.yellow(media.episode.number)} sources`
+                seasonData.season_number
+              )} Episode ${chalk.yellow(foundEpisode.episode_number)} sources`
             );
             await this.providerDownload({ provider: this.providerName, media });
           }
@@ -264,15 +268,15 @@ export class BaseMovieWebProvider {
     //console.log(captions, 'fhuehfueu');
     if (this.options.subtitle) {
       // const captions = output.stream.captions;
+
       const subtitle = captions.find(
         (subtitle: { language: any }) =>
           subtitle.language === this.options.subtitle
       );
       if (subtitle) {
         const { filename, saveDir } = IO.getFileAndFolderNameFromMedia(media);
-        //console.log(subtitle, 'ekrrkerke');
-        IO.downloadFile(subtitle.url, filename, saveDir);
-        console.log(filename, saveDir);
+        //console.log(subtitle);
+        await IO.downloadSubtitle(subtitle.url, path.join(saveDir!, filename));
       } else {
         console.log(
           chalk.yellow(
