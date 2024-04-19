@@ -234,6 +234,7 @@ export class BaseMovieWebProvider {
                   episode
                 )} is not available or aired yet`
               );
+              process.exit(0);
             }
 
             const foundEpisode = allSeasonEpisodes.find(

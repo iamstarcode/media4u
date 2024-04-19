@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import _ from 'lodash';
 import autocomplete from 'inquirer-autocomplete-standalone';
 import select from '@inquirer/select';
 
@@ -15,15 +14,14 @@ export function collect(value: any, previous: any[]) {
   return previous.concat([value]);
 }
 
-export const checkFormat = (episodes: any) => {
-  for (let i = 0; i < episodes.selectedEpisodes; i++) {
+export const checkFormat = (episodes: string[]) => {
+  for (let i = 0; i < episodes.length; i++) {
     const episode = episodes[i];
-    const regexPattern =
-      /^s[1-9][0-9]*:([1-9][0-9]*)-?([1-9][0-9]*)?(?:,([1-9][0-9]*)-?([1-9][0-9]*)?)*$/;
+    const regex = /^(s|S)([1-9]\d*):(\d+(-\d+)?)(,(\d+(-\d+)?))*$/;
 
-    if (!regexPattern.test(episode)) {
+    if (!regex.test(episode)) {
       console.log(chalk.red('Episode is not written correctly.'));
-      console.log(chalk.redBright.bgWhite(episodes));
+      console.log(chalk.redBright.bgWhite(episode));
       console.log(
         chalk.yellow('s[season_number]:[episode_number-episode_number][...]')
       );
@@ -35,64 +33,61 @@ export const checkFormat = (episodes: any) => {
   }
 };
 
-export const handleEpisodes = (selectedEpisodes: string[]) => {
-  checkFormat(selectedEpisodes);
+export const handleEpisodes = (collectedEpisodes: string[]) => {
+  checkFormat(collectedEpisodes);
 
   let eps: any[] = [];
-  for (let i = 0; i < selectedEpisodes.length; i++) {
-    const ep = selectedEpisodes[i]; ///'s9:1-5,7,8-9
-    const season = ep.substring(1, ep.indexOf(':'));
-    const streamedEpisodes = episodesSeperated(
-      ep.substring(ep.indexOf(':') + 1)
-    );
-    eps.push({ season: parseInt(season), episodes: streamedEpisodes });
+  for (let i = 0; i < collectedEpisodes.length; i++) {
+    const ep = collectedEpisodes[i]; ///'s9:1-5,7,8-9
+    const season = ep[1];
+    const [, ranges] = ep.split(':');
+    const episodes = parseRanges(ranges);
+
+    eps.push({ season: parseInt(season), episodes });
   }
 
-  const groupedBySeason = _.groupBy(eps, 'season');
+  const resultMap: Map<number, Set<number>> = new Map();
 
-  const mergedData = _.map(groupedBySeason, (group: []) =>
-    _.mergeWith(...group, (objValue: any, srcValue: any) => {
-      if (_.isArray(objValue)) {
-        return _.sortBy(_.union(objValue, srcValue));
-      }
-    })
-  );
+  for (const group of eps) {
+    const { season, episodes } = group;
 
-  return mergedData;
-};
-
-export const episodesSeperated = (value: string) => {
-  const season = value.split;
-  const allEpisodes = [];
-  const ranges = value.split(',');
-
-  for (let i = 0; i < ranges.length; i++) {
-    if (ranges[i].includes('-')) {
-      //proccess for splitting
-      const upperAndLower = ranges[i].split('-');
-      const lower = parseInt(upperAndLower[0]);
-      const upper = parseInt(upperAndLower[1]);
-      if (!Number.isNaN(lower) || !Number.isNaN(upper)) {
-        //clean for range
-        const max = Math.max(upper, lower);
-        const min = Math.min(upper, lower);
-
-        for (let j = min; j <= max; j++) {
-          const element = j;
-          allEpisodes.push(element);
-        }
-      }
+    if (!resultMap.has(season)) {
+      resultMap.set(season, new Set(episodes));
     } else {
-      const num = parseInt(ranges[i]);
-      if (!Number.isNaN(num)) {
-        allEpisodes.push(num);
-      }
+      const mergedEpisodes = new Set([...resultMap.get(season)!, ...episodes]);
+      resultMap.set(season, mergedEpisodes);
     }
   }
-  const unique = _.uniq(allEpisodes);
 
-  return _.sortBy(unique, (o: number) => o);
+  const mergedArray = Array.from(resultMap, ([season, episodes]) => ({
+    season,
+    episodes: Array.from(episodes),
+  }));
+
+  return mergedArray;
 };
+
+function parseRanges(input: string): number[] {
+  const ranges = input.split(',');
+  const numbers: Set<number> = new Set();
+
+  ranges.forEach((range) => {
+    const [start, end] = range.split('-').map(Number);
+    if (!isNaN(start)) {
+      if (!isNaN(end)) {
+        const min = Math.min(start, end);
+        const max = Math.max(start, end);
+        for (let i = min; i <= max; i++) {
+          numbers.add(i);
+        }
+      } else {
+        numbers.add(start);
+      }
+    }
+  });
+
+  return Array.from(numbers);
+}
 
 export const handleIfNewVersion = async (version: string, pkgName: string) => {
   const response = await fetch(`https://registry.npmjs.org/${pkgName}`);
@@ -129,7 +124,9 @@ export const inquireMedia = async (medias: any[]) => {
     },
   });
 
-  const mediaInfo = _.find(medias, (o: { id: any }) => o.id == answer.id);
+  const mediaInfo = medias.find((o: { id: any }) => o.id === answer.id);
+
+  //const mediaInfo = _.find(medias, (o: { id: any }) => o.id == answer.id);
 
   return mediaInfo;
 };

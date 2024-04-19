@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "flixhq": "tsc-watch --onSuccess \"node ./build/cli.js download 'flixhq:from' -f -d -q 360 -e s1:3 \"",
-    "vidsrcto": "tsc-watch --onSuccess \"node ./build/cli.js download 'vidsrcto:euphoria' -d -s en -q 720 -e s1:1-2 \"",
+    "vidsrcto": "tsc-watch --onSuccess \"node ./build/cli.js download 'vidsrcto:euphoria' -d -s en -q 720 -e S1:5-2,40-39 -e s1:1-2 -e s2:1 \"",
     "mhd": "tsc-watch --onSuccess \"node ./build/cli.js download 'moviehdwatch:see' -d -q 360 -e s7:2,26 -e s1:3,4 \"",
     "v": "tsc-watch --onSuccess \"node ./build/cli.js -h \""
   },
