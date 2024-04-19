@@ -212,7 +212,7 @@ export class BaseMovieWebProvider {
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
-          const searchText = `Searching for ${mediaInfo.title} Season ${season.season} episodes`;
+          const searchText = `Searching for ${mediaInfo.title} Season ${season.season} episodes...`;
           this.getSpinner().text = searchText;
           this.getSpinner().start();
 
@@ -232,7 +232,7 @@ export class BaseMovieWebProvider {
               CLI.printInfo(
                 `Season ${season.season} Episode ${chalk.yellow(
                   episode
-                )} is not available or aired yet`
+                )} is not available or aired yet.`
               );
               process.exit(0);
             }
@@ -261,7 +261,9 @@ export class BaseMovieWebProvider {
             console.log(
               `Searching for ${chalk.yellow(media.title)} Season ${chalk.yellow(
                 seasonData.season_number
-              )} Episode ${chalk.yellow(foundEpisode.episode_number)} sources`
+              )} Episode ${chalk.yellow(
+                foundEpisode.episode_number
+              )} sources...`
             );
             await this.providerDownload({ provider: this.providerName, media });
           }

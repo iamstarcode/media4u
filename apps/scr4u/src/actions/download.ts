@@ -15,8 +15,6 @@ const downloadAction = async (
   options: OptionsType
 ) => {
   const streamedEpisodes = CLI.handleEpisodes(options.episodes);
-
-  console.log(streamedEpisodes, 'dfdefefd');
   options.episodes = streamedEpisodes;
 
   const [providerName, query] = _query;
