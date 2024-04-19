@@ -1,18 +1,14 @@
 import { MovieWebBaseProviderType, OptionsType } from '../types';
 import fs, { readFileSync } from 'node:fs';
 import path from 'path';
-import { CLI, IO } from '@iamstarcode/4u-lib';
+import { CLI, IO, Util } from '@iamstarcode/4u-lib';
 import chalk from 'chalk';
 import ora, { Ora } from 'ora';
-
-import { SingleBar } from 'cli-progress';
-
-import { homedir } from 'node:os';
 
 interface IMediResult {
   external_ids: any;
   id: number;
-  type: 'tv' | 'movie';
+  type: 'tv' | 'movie' | 'show';
   title: string;
   first_air_date: string;
 }
@@ -25,7 +21,7 @@ interface ISeason {
 interface IMediaInfo {
   external_ids: any;
   title: string;
-  type: 'tv' | 'movie';
+  type: 'tv' | 'movie' | 'show';
   id?: number;
   first_air_date: string;
   number_of_episodes?: number;
@@ -183,7 +179,7 @@ export class BaseMovieWebProvider {
       external_ids: data.external_ids,
     };
 
-    if (mediaResult.type == 'tv') {
+    if (mediaResult.type == 'tv' || mediaResult.type == 'show') {
       mediaInfo.seasons = data.seasons;
       mediaInfo.number_of_episodes = data.number_of_episodes;
       mediaInfo.number_of_seasons = data.number_of_seasons;
@@ -213,22 +209,33 @@ export class BaseMovieWebProvider {
     } else {
       for (let i = 0; i < this.options.episodes.length; i++) {
         const season = this.options.episodes[i];
-        //console.log(season, 'frhurhfurhfu');
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
+          const searchText = `Searching for ${mediaInfo.title} Season ${season.season} episodes`;
+          this.getSpinner().text = searchText;
+          this.getSpinner().start();
+
           const response = await fetch(
             `${this.API_BASE_URL}/tv/${mediaInfo.id}/season/${season.season}`
           );
 
+          this.getSpinner().stop();
+
           const seasonData = await response.json();
           const allSeasonEpisodes: any[] = seasonData.episodes;
 
-          //
           for (let j = 0; j < season.episodes.length; j++) {
             const episode = season.episodes[j];
-            //console.log(episode);
-            // console.log(allSeasonEpisodes, 'all');
+
+            if (allSeasonEpisodes.length < episode) {
+              CLI.printInfo(
+                `Season ${season.season} Episode ${chalk.yellow(
+                  episode
+                )} is not available or aired yet`
+              );
+            }
+
             const foundEpisode = allSeasonEpisodes.find(
               (item) => item.episode_number === episode
             );

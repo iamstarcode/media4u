@@ -150,3 +150,14 @@ export async function inquireQuality() {
 
   return parseInt(answer);
 }
+
+export const printInfo = (message: string) => {
+  console.log(`${chalk.blue('[INFO]')} ${message}`);
+};
+export const printWarn = (message: string) => {
+  console.log(`${chalk.yellow('[WARNING]')} ${message}`);
+};
+export const printError = (message: string) => {
+  console.log(`${chalk.red('[ERROR]')} ${message}`);
+  process.exit(1);
+};

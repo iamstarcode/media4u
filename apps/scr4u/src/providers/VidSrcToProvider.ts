@@ -75,7 +75,6 @@ export class VidSrcToProvider extends BaseMovieWebProvider {
       );
 
       if (this.options.subtitleOnly) {
-        ////
         await this.downloadSubtitle(output.stream.captions, media);
       } else {
         await IO.downloadStream({
