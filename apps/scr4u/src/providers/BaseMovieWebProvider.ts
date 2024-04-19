@@ -273,17 +273,13 @@ export class BaseMovieWebProvider {
   }
 
   async downloadSubtitle(captions: any[], media: any) {
-    //console.log(captions, 'fhuehfueu');
     if (this.options.subtitle) {
-      // const captions = output.stream.captions;
-
       const subtitle = captions.find(
         (subtitle: { language: any }) =>
           subtitle.language === this.options.subtitle
       );
       if (subtitle) {
         const { filename, saveDir } = IO.getFileAndFolderNameFromMedia(media);
-        //console.log(subtitle);
         await IO.downloadSubtitle(subtitle.url, path.join(saveDir!, filename));
       } else {
         console.log(

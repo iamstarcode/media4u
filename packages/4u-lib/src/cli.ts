@@ -39,8 +39,8 @@ export const handleEpisodes = (collectedEpisodes: string[]) => {
   let eps: any[] = [];
   for (let i = 0; i < collectedEpisodes.length; i++) {
     const ep = collectedEpisodes[i]; ///'s9:1-5,7,8-9
-    const season = ep[1];
-    const [, ranges] = ep.split(':');
+    const [sn, ranges] = ep.split(':');
+    const season = sn.substring(1);
     const episodes = parseRanges(ranges);
 
     eps.push({ season: parseInt(season), episodes });
@@ -63,6 +63,8 @@ export const handleEpisodes = (collectedEpisodes: string[]) => {
     season,
     episodes: Array.from(episodes),
   }));
+
+  mergedArray.sort((a, b) => a.season - b.season);
 
   return mergedArray;
 };
