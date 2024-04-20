@@ -1,6 +1,6 @@
 # flix4u
 
-Download Anime Movies and TV series in your terminal
+Download Movies and TV series in your terminal
 
 ## Overview
 
@@ -52,7 +52,8 @@ brew install ffmpeg
 
 ```bash
 winget install --id=Gyan.FFmpeg  -e
-
+  -OR
+scoop install ffmpeg
 ```
 
 Then install flix4u
@@ -102,7 +103,7 @@ The download command is used to scrap and download anime
 
 ```bash
 Usage:
- flix4u download [<provider:anime_name>] -f -r 720 -e 1-10
+ flix4u download [<provider:anime_name>] -f -q 720 -e 1-10
 Options:
   -d, --debug             Debugging (default: false)
   -f, --force             Force refecth for download cache, links and searches (default: false)
@@ -112,7 +113,7 @@ Options:
 ```
 
 ```bash
-flix4u download 'animepahe:one piece' -f -q 720 -e 1,7-10,100-105
+flix4u download 'animepahe:one piece' -f -q 720 -e s1:1,7-10,100-105
 ```
 
     *   The download argument, <provider:search_query> is used to define a supported provider and
@@ -121,7 +122,8 @@ flix4u download 'animepahe:one piece' -f -q 720 -e 1,7-10,100-105
     *   The download command is efficeint by default, stores caches of every result.
     *   `-f` flag is used to force new searches and ignore cache, example are when new episodes has arrived since last time the download command was run.
     *   `-q` flag is used to select a prefered video quality `360`,`480`,`720`,`1080`. When not provided a prompt will be displayed to select a preferred qulaity.
-    *   `-e` flag takes multiple ranges of episodes to download.
+    *   `-e` flag takes multiple ranges of season episodes to download.
+          *   `s1:` mean episodes in Season 1.
           *   `100` will be only episode 100.
           *   `7-10` will be episode 7,8,9 and 10
           *   Any episode falling between multiple ranges will only download that episode once.
@@ -143,8 +145,7 @@ flix4u clear [provider|all]
 
 These are the currently supported providers, we plan to add more soon. Some providers may stop working unexpectedly, and we try our best to have it fixed, and some time might be due to providers server runtime being down.
 
-| Website                                  | Searcher Prefix | Available Qualities     | Content Extension |
-| ---------------------------------------- | --------------- | ----------------------- | ----------------- |
-| [AnimePahe](https://www.animepahe.com/)  | `animepahe`     | 360p, 480p, 720p, 1080p | MP4               |
-| [AnimePahe2](https://www.animepahe.com/) | `animepahe2`    | 360p, 480p, 720p, 1080p | MP4 / TS          |
-| [GogoAnime](https://gogoanimehd.io/)     | `gogoanime`     | 360p, 480p, 720p, 1080p | MP4 / TS          |
+| Website                               | Searcher Prefix | Available Qualities     | Content Extension |
+| ------------------------------------- | --------------- | ----------------------- | ----------------- |
+| [VidSrcTo](https://vidsrc.to/)        | `animepahe`     | 360p, 720p, 1080p       | MP4               |
+| [HDRezka](https://www.animepahe.com/) | `animepahe2`    | 360p, 480p, 720p, 1080p | MP4 / TS          |
