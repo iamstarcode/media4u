@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 import { IBaseProvider, OptionsType, Provider } from '../types/index.js';
 
-import { FlixHQProvider } from '../providers/FlixHQProvider.js';
+import FlixHQ from '../providers/FlixHQ.js';
 import chalk from 'chalk';
 import { MovieHdWatchProvider } from '../providers/MovieHdWatchProvider.js';
 
 import { CLI } from '@iamstarcode/4u-lib';
-import { VidSrcToProvider } from '../providers/VidSrcToProvider.js';
+import VidSrcTo from '../providers/VidSrcTo.js';
 import _ from 'lodash';
+import HDRezka from '../providers/HDRezka.js';
 
 type Providers = Pick<IBaseProvider, 'providerName'>;
 const downloadAction = async (
@@ -26,14 +27,17 @@ const downloadAction = async (
   }
 
   if (providerName == 'flixhq') {
-    const provider = new FlixHQProvider(obj);
+    const provider = new FlixHQ(obj);
     await provider.run();
   } else if (providerName == 'moviehdwatch') {
     const provider = new MovieHdWatchProvider(obj);
     await provider.run();
   } else if (providerName == 'vidsrcto') {
-    const vidSrcToprovider = new VidSrcToProvider(obj);
+    const vidSrcToprovider = new VidSrcTo(obj);
     await vidSrcToprovider.run();
+  } else if (providerName == 'hdrezka') {
+    const hdrezka = new HDRezka(obj);
+    await hdrezka.run();
   } else {
     console.log(chalk.red('Provider not found'));
     process.exit(0);

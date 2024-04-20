@@ -7,7 +7,7 @@ import path from 'path';
 
 import { IBaseProvider, IProvider } from '../types/index.js';
 
-export class FlixHQProvider extends BaseProvider {
+export default class FlixHQProvider extends BaseProvider {
   constructor({
     options,
     query,

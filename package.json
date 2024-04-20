@@ -9,6 +9,7 @@
     "flix": "pnpm -F @iamstarcode/4u-lib build && pnpm -F scr4u flixhq",
     "mhd": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter scr4u mhd",
     "vidsrcto": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter scr4u vidsrcto",
+    "hdrezka": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter scr4u hdrezka",
     "prepare": "husky install"
   },
   "private": true,

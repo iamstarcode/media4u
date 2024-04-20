@@ -243,8 +243,8 @@ export class BaseMovieWebProvider {
 
             const media: any = {
               title: mediaInfo.title,
-              releaseYear: 2005,
-              tmdbId: mediaInfo.id,
+              releaseYear: +seasonData.air_date.substring(0, 4),
+              tmdbId: foundEpisode.show_id,
               type: 'show',
               imdbId: mediaInfo.external_ids.imdb_id,
               episode: {

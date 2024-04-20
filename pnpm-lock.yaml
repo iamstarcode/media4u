@@ -193,6 +193,9 @@ importers:
       node-downloader-helper:
         specifier: ^2.1.7
         version: 2.1.9
+      node-fetch:
+        specifier: ^3.3.2
+        version: 3.3.2
       ora:
         specifier: ^7.0.1
         version: 7.0.1

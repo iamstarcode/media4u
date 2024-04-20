@@ -26,7 +26,7 @@ interface StreamInfo {
   url: string;
 }
 
-export class VidSrcToProvider extends BaseMovieWebProvider {
+export default class VidSrcToProvider extends BaseMovieWebProvider {
   constructor({
     options,
     query,
