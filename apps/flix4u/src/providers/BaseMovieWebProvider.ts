@@ -44,8 +44,6 @@ interface IMediaInfo {
   seasons?: ISeason[];
 }
 
-//
-
 export class BaseMovieWebProvider implements IHandleStream {
   options: OptionsType;
   searchPath: string;
@@ -131,7 +129,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     });
 
     const data = await response.json();
-
     const medias = data.data;
 
     spinner.stop();
@@ -187,7 +184,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     spinner.text = `Searching ${chalk.yellow(mediaResult.title)} info`;
     spinner.start();
 
-    //handle for movie too here
     const response = await fetch(`${this.API_BASE_URL}/tv/${mediaResult.id}`);
 
     const data: any = await response.json();
@@ -297,7 +293,6 @@ export class BaseMovieWebProvider implements IHandleStream {
               imdbId: mediaInfo.external_ids.imdb_id,
               episode: {
                 number: foundEpisode.episode_number,
-                //title: foundEpisode.name!,
                 tmdbId: foundEpisode.id,
               },
               season: {
@@ -339,7 +334,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     const maxRetries = 3; // Adjust as needed (consider success rate and API limits)
     let attempts = 0;
 
-    ////saaasssssffdww
     while (attempts < maxRetries) {
       try {
         const output = await providers.runSourceScraper({
@@ -407,8 +401,6 @@ export class BaseMovieWebProvider implements IHandleStream {
       }
     }
   }
-
-  //sssbchbch
 
   async downloadSubtitle(captions: any[], media: any) {
     if (this.options.subtitle) {
