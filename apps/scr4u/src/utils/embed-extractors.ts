@@ -14,10 +14,6 @@ export async function vidplayExtractor(
   const response = await fetch(stream.playlist);
   const data = await response.text();
   const lines = data.split('\n');
-  const streamInfos: StreamInfo[] = [];
-  //const streamWithQualities: StreamWithQulaities = { ...stream, qualities: {} };
-
-  ///console.log(lines, 'djcjcjjd');
 
   let qualities: any[] = [];
   for (let i = 0; i < lines.length; i++) {

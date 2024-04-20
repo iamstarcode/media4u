@@ -74,6 +74,20 @@ export type StreamWithQulaities = Stream & {
   qualities: [{ url: string; resolution: string }];
 };
 
+export interface StreamInfo {
+  [resolution: number]: {
+    url: string;
+    type: string;
+  };
+}
+
+export interface Quality {
+  [resolution: number]: {
+    url: string;
+    type: string;
+  };
+}
+
 export interface IHandleStream {
   handleEmbeds(
     embeds: SourcererEmbeds,

@@ -56,7 +56,7 @@ export default class HDRezka extends BaseMovieWebProvider {
     ////
   }
 
-  findClosestResolution(
+  /*   findClosestResolution(
     resolutionInput: number,
     streamInfos: StreamInfo[]
   ): StreamInfo | null {
@@ -79,7 +79,7 @@ export default class HDRezka extends BaseMovieWebProvider {
     }
 
     return closestStream;
-  }
+  } */
 
   async extractResolutionAndUrl(playlistUrl: string): Promise<StreamInfo[]> {
     const response = await fetch(playlistUrl);

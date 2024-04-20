@@ -11,6 +11,7 @@ import {
   IProvider,
   MovieWebBaseProviderType,
   SourcererEmbeds,
+  StreamInfo,
   StreamWithQulaities,
 } from '../types/index.js';
 import { BaseMovieWebProvider } from './BaseMovieWebProvider.js';
@@ -25,11 +26,6 @@ import { CLI, IO } from '@iamstarcode/4u-lib';
 import { appPath } from '../config/constants.js';
 import chalk from 'chalk';
 import { vidplayExtractor } from '../utils/embed-extractors.js';
-
-interface StreamInfo {
-  resolution: string;
-  url: string;
-}
 
 export default class VidSrcToProvider
   extends BaseMovieWebProvider
@@ -56,7 +52,7 @@ export default class VidSrcToProvider
         url: embed.url,
       });
       if (embed.embedId == 'vidplay') {
-        const streamWithQualities = await vidplayExtractor(
+        const streamWithQualities = await this.vidplayExtractor(
           output.stream[0] as any
         );
         if (streamWithQualities) {
@@ -88,7 +84,44 @@ export default class VidSrcToProvider
   // handleEmbeds (embeds: { embedId: string; url: string }[]) => Promise<void>;
 
   //rename to get Stream
-  override async providerDownload({
+
+  async vidplayExtractor(
+    stream: Stream & { playlist: string }
+  ): Promise<StreamWithQulaities> {
+    const response = await fetch(stream.playlist);
+    const data = await response.text();
+    const lines = data.split('\n');
+
+    let qualities: any[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('#EXT-X-STREAM-INF')) {
+        const resolutionMatch = line.match(/RESOLUTION=(\d+x\d+)/);
+
+        if (resolutionMatch) {
+          const resolution = resolutionMatch[1];
+          const right = resolutionMatch[1].substring(
+            resolution.indexOf('x') + 1
+          );
+          let url = lines[i + 1].trim();
+          const index = stream.playlist.lastIndexOf('/h/');
+          if (index !== -1) {
+            url = stream.playlist.slice(0, index) + `/h/${url}`;
+          }
+          qualities?.push({ [+right]: { resolution, url } });
+        }
+      }
+    }
+
+    const streamWithQualities = {
+      ...stream,
+      qualities: qualities as [{ url: string; resolution: string }],
+    };
+    return streamWithQualities;
+    //return streamInfos;
+  }
+
+  /*   override async providerDownload({
     provider,
     media,
   }: {
@@ -143,7 +176,7 @@ export default class VidSrcToProvider
         titleToDir
       );
 
-      /*     if (this.options.subtitleOnly) {
+          if (this.options.subtitleOnly) {
         CLI.printInfo('Downloading Subtitle...');
         await this.downloadSubtitle(output.stream.captions, media);
       } else {
@@ -161,11 +194,11 @@ export default class VidSrcToProvider
             `${chalk.blue('[INFO]')}Download complete \u2713 `
           )
         );
-      } */
+      } 
     }
   }
-
-  findClosestResolution(
+ */
+  /*   findClosestResolution(
     resolutionInput: number,
     streamInfos: StreamInfo[]
   ): StreamInfo | null {
@@ -188,9 +221,9 @@ export default class VidSrcToProvider
     }
 
     return closestStream;
-  }
+  } */
 
-  async extractResolutionAndUrl(playlistUrl: string): Promise<StreamInfo[]> {
+  /*   async extractResolutionAndUrl(playlistUrl: string): Promise<StreamInfo[]> {
     const response = await fetch(playlistUrl);
     const data = await response.text();
     const lines = data.split('\n');
@@ -208,12 +241,12 @@ export default class VidSrcToProvider
             url = playlistUrl.slice(0, index) + `/h/${url}`;
           }
 
-          const streamInfo: StreamInfo = { resolution, url };
+          const streamInfo: StreamInfo = { resolution, url, type: 'hls' };
           streamInfos.push(streamInfo);
         }
       }
     }
 
     return streamInfos;
-  }
+  } */
 }

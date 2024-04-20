@@ -2,6 +2,7 @@ import {
   IHandleStream,
   MovieWebBaseProviderType,
   OptionsType,
+  Quality,
   SourcererEmbeds,
   StreamWithQulaities,
 } from '../types';
@@ -294,6 +295,8 @@ export class BaseMovieWebProvider implements IHandleStream {
               media,
             });
 
+            await this.downloadHlsStream(stream);
+
             console.log(stream?.type, 'RFRFRGFRFRF');
             //await this.providerDownload({ provider: this.providerName, media });
           }
@@ -322,11 +325,17 @@ export class BaseMovieWebProvider implements IHandleStream {
     if (output.stream || output.embeds) {
       if (output.stream) {
         //handle stream TODO handle Stream
+        console.log(output.stream, 'bdcbdbchdbchdc');
       } else {
         const stream = this.handleEmbeds(output.embeds, media); //belongs children
         return stream;
       }
     }
+  }
+
+  async downloadHlsStream(stream: StreamWithQulaities | undefined) {
+    const choosen = this.findClosestResolution(stream?.qualities);
+    console.log(choosen, 'cjjdjnvjn');
   }
 
   async downloadSubtitle(captions: any[], media: any) {
@@ -351,6 +360,24 @@ export class BaseMovieWebProvider implements IHandleStream {
     }
   }
 
+  findClosestResolution(qualities: Quality[] | undefined): Quality | null {
+    let closestResolution: Quality | null = null;
+    let minDifference = Number.MAX_VALUE;
+
+    if (qualities)
+      qualities.forEach((item: any) => {
+        const resolutions = Object.keys(item).map(Number); // Get resolutions as numbers
+        const resolution = resolutions[0]; // Assuming each item has only one resolution
+
+        const difference = Math.abs(this.options.quality - resolution);
+        if (difference < minDifference) {
+          minDifference = difference;
+          closestResolution = item;
+        }
+      });
+
+    return closestResolution;
+  }
   getSpinner() {
     return this.spinner;
   }
