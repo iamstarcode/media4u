@@ -86,11 +86,20 @@ export function sanitizeFileName(fileName: string) {
   return sanitizedFileName;
 }
 
-export async function downloadFile(
-  url: string,
-  fileName: string,
-  folder: string = './'
-) {
+export async function downloadFile({
+  url,
+  media,
+}: {
+  url: string;
+  media: {
+    type: string;
+    title: string;
+    episode: { number: number };
+    season: { number: number };
+  };
+}) {
+  const { filename, saveDir } = getFileAndFolderNameFromMedia(media);
+
   const bar = new cliProgress.SingleBar(
     {
       format:
@@ -107,11 +116,13 @@ export async function downloadFile(
     cliProgress.Presets.legacy
   );
 
-  createDirIfNotFound(folder);
+  createDirIfNotFound(saveDir!);
 
-  const dl = new DownloaderHelper(url, folder, {
-    fileName: { name: fileName },
+  const dl = new DownloaderHelper(url, saveDir!, {
+    fileName: { name: filename! },
     override: true,
+    resumeIfFileExists: true,
+    resumeOnIncomplete: true,
   });
 
   const size = await dl.getTotalSize();
@@ -140,6 +151,46 @@ export async function downloadFile(
     console.error(err);
     bar.stop();
   });
+}
+
+export async function downloadStream({
+  url,
+  media,
+  cacheDir,
+  headers,
+}: {
+  url: string;
+  cacheDir: string;
+  headers: { [key: string]: string };
+  media: {
+    type: string;
+    title: string;
+    episode: { number: number };
+    season: { number: number };
+  };
+}) {
+  const { filename, saveDir } = getFileAndFolderNameFromMedia(media);
+
+  await m3u8Download(url, {
+    showProgress: true,
+    filename,
+    cacheDir,
+    saveDir: saveDir,
+    headers,
+  });
+
+  if (fs.existsSync(cacheDir)) {
+    const files = fs.readdirSync(cacheDir);
+
+    files.forEach((file) => {
+      const filePath = path.join(cacheDir, file);
+      fs.unlinkSync(filePath);
+    });
+
+    fs.rmdirSync(cacheDir);
+  } else {
+    console.log(`Folder ${cacheDir} not found.`);
+  }
 }
 
 export async function downloadSubtitle(url: string, filePath: fs.PathLike) {
@@ -205,44 +256,4 @@ export function getFileAndFolderNameFromMedia(media: {
   }
 
   return { filename, saveDir };
-}
-
-export async function downloadStream({
-  url,
-  media,
-  cacheDir,
-  headers,
-}: {
-  url: string;
-  cacheDir: string;
-  headers: { [key: string]: string };
-  media: {
-    type: string;
-    title: string;
-    episode: { number: number };
-    season: { number: number };
-  };
-}) {
-  const { filename, saveDir } = getFileAndFolderNameFromMedia(media);
-
-  await m3u8Download(url, {
-    showProgress: true,
-    filename,
-    cacheDir,
-    saveDir: saveDir,
-    headers,
-  });
-
-  if (fs.existsSync(cacheDir)) {
-    const files = fs.readdirSync(cacheDir);
-
-    files.forEach((file) => {
-      const filePath = path.join(cacheDir, file);
-      fs.unlinkSync(filePath);
-    });
-
-    fs.rmdirSync(cacheDir);
-  } else {
-    console.log(`Folder ${cacheDir} not found.`);
-  }
 }

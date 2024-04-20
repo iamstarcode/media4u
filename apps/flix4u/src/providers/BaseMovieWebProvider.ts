@@ -16,7 +16,9 @@ import {
   makeStandardFetcher,
   targets,
   SourcererOutput,
+  ScrapeMedia,
 } from '@movie-web/providers';
+import { appPath } from '../config/constants.js';
 
 interface IMediResult {
   external_ids: any;
@@ -265,7 +267,7 @@ export class BaseMovieWebProvider implements IHandleStream {
               (item) => item.episode_number === episode
             );
 
-            const media: any = {
+            const media: ScrapeMedia = {
               title: mediaInfo.title,
               releaseYear: +seasonData.air_date.substring(0, 4),
               tmdbId: foundEpisode.show_id,
@@ -273,7 +275,7 @@ export class BaseMovieWebProvider implements IHandleStream {
               imdbId: mediaInfo.external_ids.imdb_id,
               episode: {
                 number: foundEpisode.episode_number,
-                title: foundEpisode.name!,
+                //title: foundEpisode.name!,
                 tmdbId: foundEpisode.id,
               },
               season: {
@@ -295,9 +297,8 @@ export class BaseMovieWebProvider implements IHandleStream {
               media,
             });
 
-            await this.downloadHlsStream(stream);
+            await this.downloadHlsStream(media, stream!);
 
-            console.log(stream?.type, 'RFRFRGFRFRF');
             //await this.providerDownload({ provider: this.providerName, media });
           }
         }
@@ -313,7 +314,7 @@ export class BaseMovieWebProvider implements IHandleStream {
     media,
   }: {
     provider: string;
-    media: any;
+    media: ScrapeMedia;
   }): Promise<StreamWithQulaities | undefined> {
     const providers = this.getProviders();
 
@@ -325,7 +326,9 @@ export class BaseMovieWebProvider implements IHandleStream {
     if (output.stream || output.embeds) {
       if (output.stream) {
         //handle stream TODO handle Stream
-        console.log(output.stream, 'bdcbdbchdbchdc');
+        // console.log(output.stream, 'sjjhjddjbhdbc');
+        const stream = output.stream[0];
+        return stream as StreamWithQulaities;
       } else {
         const stream = this.handleEmbeds(output.embeds, media); //belongs children
         return stream;
@@ -333,9 +336,51 @@ export class BaseMovieWebProvider implements IHandleStream {
     }
   }
 
-  async downloadHlsStream(stream: StreamWithQulaities | undefined) {
+  async downloadHlsStream(media: ScrapeMedia, stream: StreamWithQulaities) {
     const choosen = this.findClosestResolution(stream?.qualities);
-    console.log(choosen, 'cjjdjnvjn');
+
+    const url = choosen![this.options.quality].url;
+
+    if (url) {
+      const type = media.type;
+      let message = 'Now Downloading ';
+      if (media.type == 'show') {
+        message += `${media.title} Season ${media.season.number} Episode ${media.episode.number}`;
+      } else {
+        message += `${media.title}`;
+      }
+      CLI.printInfo(message);
+    }
+    //if we get a url we can inform
+    const titleToDir = IO.sanitizeDirName(
+      Buffer.from(url).toString('base64').substring(0, 24)
+    );
+
+    const cacheDir = path.join(appPath, this.providerName, 'cache', titleToDir);
+
+    if (this.options.subtitleOnly) {
+      CLI.printInfo('Downloading Subtitle...');
+      await this.downloadSubtitle(stream.captions, media);
+    } else {
+      if (stream.type == 'hls') {
+        await IO.downloadStream({
+          url: url!,
+          cacheDir,
+          headers: stream.headers!,
+          media: media as any,
+        });
+      } else {
+        await IO.downloadFile({ media: media as any, url });
+      }
+      if (this.options.subtitle) {
+        await this.downloadSubtitle(stream.captions, media);
+      }
+      console.log(
+        chalk.greenBright.bold(
+          `${chalk.blue('[INFO]')}Download complete \u2713 `
+        )
+      );
+    }
   }
 
   async downloadSubtitle(captions: any[], media: any) {
@@ -360,21 +405,19 @@ export class BaseMovieWebProvider implements IHandleStream {
     }
   }
 
-  findClosestResolution(qualities: Quality[] | undefined): Quality | null {
+  findClosestResolution(qualities: any | undefined): Quality | null {
     let closestResolution: Quality | null = null;
     let minDifference = Number.MAX_VALUE;
 
-    if (qualities)
-      qualities.forEach((item: any) => {
-        const resolutions = Object.keys(item).map(Number); // Get resolutions as numbers
-        const resolution = resolutions[0]; // Assuming each item has only one resolution
-
-        const difference = Math.abs(this.options.quality - resolution);
-        if (difference < minDifference) {
-          minDifference = difference;
-          closestResolution = item;
-        }
-      });
+    console.log(qualities, 'ftftftft');
+    Object.keys(qualities).forEach((resolutionKey) => {
+      const resolution = parseInt(resolutionKey);
+      const difference = Math.abs(this.options.quality - resolution);
+      if (difference < minDifference) {
+        minDifference = difference;
+        closestResolution = { [resolution]: qualities[resolution] };
+      }
+    });
 
     return closestResolution;
   }
@@ -386,6 +429,7 @@ export class BaseMovieWebProvider implements IHandleStream {
     return makeProviders({
       fetcher: makeStandardFetcher(fetch),
       target: targets.ANY,
+      consistentIpForRequests: true,
     });
   }
 }

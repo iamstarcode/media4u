@@ -92,7 +92,7 @@ export default class VidSrcToProvider
     const data = await response.text();
     const lines = data.split('\n');
 
-    let qualities: any[] = [];
+    let qualities = {};
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line.startsWith('#EXT-X-STREAM-INF')) {
@@ -108,7 +108,8 @@ export default class VidSrcToProvider
           if (index !== -1) {
             url = stream.playlist.slice(0, index) + `/h/${url}`;
           }
-          qualities?.push({ [+right]: { resolution, url } });
+          qualities = { ...qualities, [+right]: { resolution, url } };
+          //  qualities?.push({ [+right]: { resolution, url } });
         }
       }
     }
