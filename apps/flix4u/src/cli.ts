@@ -15,7 +15,7 @@ const packagejson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   const program = new Command();
 
   const version = packagejson.version;
-  //await CLI.handleIfNewVersion(version!, 'movie4u');
+  //await CLI.handleIfNewVersion(version!, 'flix4u');
 
   program
     .name('cli')

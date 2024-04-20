@@ -548,7 +548,7 @@ export class BaseProvider {
 
     const cacheDir = path.join(
       homedir(),
-      'movie4u',
+      'flix4u',
       this.providerName,
       'cache',
       titleToDir,
@@ -582,7 +582,7 @@ export class BaseProvider {
 
     const cacheDir = path.join(
       homedir(),
-      'movie4u',
+      'flix4u',
       this.providerName,
       'cache',
       titleToDir

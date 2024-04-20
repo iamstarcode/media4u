@@ -16,7 +16,7 @@ export class MovieHdWatchProvider extends BaseProvider {
       options,
       query,
       provider: new MOVIES.MovieHdWatch(),
-      searchPath: path.join(homedir(), 'movie4u', 'MovieHdWatch', 'Searches'),
+      searchPath: path.join(homedir(), 'flix4u', 'MovieHdWatch', 'Searches'),
       providerName: 'moviehdwatch',
     });
   }

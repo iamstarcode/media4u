@@ -1,4 +1,4 @@
-# movie4u
+# flix4u
 
 Download Anime Movies and TV series in your terminal
 
@@ -55,21 +55,21 @@ winget install --id=Gyan.FFmpeg  -e
 
 ```
 
-Then install movie4u
+Then install flix4u
 
 ```bash
-  npm i -g movie4u
+  npm i -g flix4u
     or
-  yarn global add movie4u
+  yarn global add flix4u
     or
-  pnpm i -g movie4u
+  pnpm i -g flix4u
 ```
 
 2. Install from source
 
 ```sh
-    git clone https://github.com/iamstarcode/movie4u.git \
-    && cd movie4u \
+    git clone https://github.com/iamstarcode/flix4u.git \
+    && cd flix4u \
 
     && npm install \
     or
@@ -83,7 +83,7 @@ Then install movie4u
 ## Usage
 
 ```bash
-Usage: movie4u [options] [command]
+Usage: flix4u [options] [command]
 
 Options:
   -d, --debug     show debugging errors
@@ -102,7 +102,7 @@ The download command is used to scrap and download anime
 
 ```bash
 Usage:
- movie4u download [<provider:anime_name>] -f -r 720 -e 1-10
+ flix4u download [<provider:anime_name>] -f -r 720 -e 1-10
 Options:
   -d, --debug             Debugging (default: false)
   -f, --force             Force refecth for download cache, links and searches (default: false)
@@ -112,7 +112,7 @@ Options:
 ```
 
 ```bash
-movie4u download 'animepahe:one piece' -f -q 720 -e 1,7-10,100-105
+flix4u download 'animepahe:one piece' -f -q 720 -e 1,7-10,100-105
 ```
 
     *   The download argument, <provider:search_query> is used to define a supported provider and
@@ -136,7 +136,7 @@ movie4u download 'animepahe:one piece' -f -q 720 -e 1,7-10,100-105
 The clear command is used to delete search history and any other downloaded video caches
 
 ```bash
-movie4u clear [provider|all]
+flix4u clear [provider|all]
 ```
 
 ## Provider
