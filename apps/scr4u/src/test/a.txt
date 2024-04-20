@@ -1,0 +1,12 @@
+{
+  embeds: [],
+  stream: [
+    {
+      id: 'primary',
+      type: 'file',
+      flags: [Array],
+      captions: [Array],
+      qualities: [Object]
+    }
+  ]
+}

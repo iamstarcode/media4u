@@ -1,9 +1,21 @@
-import { MovieWebBaseProviderType, OptionsType } from '../types';
+import {
+  IHandleStream,
+  MovieWebBaseProviderType,
+  OptionsType,
+  SourcererEmbeds,
+  StreamWithQulaities,
+} from '../types';
 import fs, { readFileSync } from 'node:fs';
 import path from 'path';
 import { CLI, IO, Util } from '@iamstarcode/4u-lib';
 import chalk from 'chalk';
 import ora, { Ora } from 'ora';
+import {
+  makeProviders,
+  makeStandardFetcher,
+  targets,
+  SourcererOutput,
+} from '@movie-web/providers';
 
 interface IMediResult {
   external_ids: any;
@@ -28,7 +40,10 @@ interface IMediaInfo {
   number_of_seasons?: number;
   seasons?: ISeason[];
 }
-export class BaseMovieWebProvider {
+
+//
+
+export class BaseMovieWebProvider implements IHandleStream {
   options: OptionsType;
   searchPath: string;
   query: string;
@@ -52,8 +67,16 @@ export class BaseMovieWebProvider {
     this.spinner = ora({ spinner: 'dots12' });
   }
 
+  handleEmbeds(
+    embeds: SourcererEmbeds,
+    media: any
+  ): Promise<StreamWithQulaities | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
   //Overrides
   async providerDownload({}: { provider: string; media: any }): Promise<void> {}
+  //async handleEmbeds(embeds: SourcererEmbeds): Promise<void> {}
   async downloadStream({}: { provider: string; media: any }): Promise<void> {}
   async run() {
     const medias: IMediResult[] = await this.getMedia();
@@ -265,13 +288,45 @@ export class BaseMovieWebProvider {
                 foundEpisode.episode_number
               )} sources...`
             );
-            await this.providerDownload({ provider: this.providerName, media });
+
+            const stream = await this.getStreamWithQualities({
+              provider: this.providerName,
+              media,
+            });
+
+            console.log(stream?.type, 'RFRFRGFRFRF');
+            //await this.providerDownload({ provider: this.providerName, media });
           }
         }
       }
     }
 
     process.exit(0);
+  }
+
+  //or rename to return embed or sources
+  async getStreamWithQualities({
+    provider,
+    media,
+  }: {
+    provider: string;
+    media: any;
+  }): Promise<StreamWithQulaities | undefined> {
+    const providers = this.getProviders();
+
+    const output = await providers.runSourceScraper({
+      media: media,
+      id: provider,
+    });
+
+    if (output.stream || output.embeds) {
+      if (output.stream) {
+        //handle stream TODO handle Stream
+      } else {
+        const stream = this.handleEmbeds(output.embeds, media); //belongs children
+        return stream;
+      }
+    }
   }
 
   async downloadSubtitle(captions: any[], media: any) {
@@ -298,5 +353,12 @@ export class BaseMovieWebProvider {
 
   getSpinner() {
     return this.spinner;
+  }
+
+  getProviders() {
+    return makeProviders({
+      fetcher: makeStandardFetcher(fetch),
+      target: targets.ANY,
+    });
   }
 }

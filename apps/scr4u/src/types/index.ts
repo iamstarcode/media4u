@@ -1,6 +1,7 @@
 import FlixHQ from '@consumet/extensions/dist/providers/movies/flixhq';
 import { BaseParser } from '@consumet/extensions/dist/models';
 import MovieHdWatch from '@consumet/extensions/dist/providers/movies/movidhdwatch';
+import { SourcererOutput, Stream } from '@movie-web/providers';
 
 export interface IMedia {
   name?: string;
@@ -64,4 +65,18 @@ export interface IProvider {
   options: OptionsType;
   query: string;
   provider: string;
+}
+
+export type SourcererEmbeds = Pick<SourcererOutput, 'embeds'>['embeds'];
+export type SourcererEmbed = SourcererEmbeds[0];
+
+export type StreamWithQulaities = Stream & {
+  qualities: [{ url: string; resolution: string }];
+};
+
+export interface IHandleStream {
+  handleEmbeds(
+    embeds: SourcererEmbeds,
+    media: any
+  ): Promise<StreamWithQulaities | undefined>;
 }

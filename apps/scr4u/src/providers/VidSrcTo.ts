@@ -7,26 +7,34 @@ import path from 'path';
 
 import {
   IBaseProvider,
+  IHandleStream,
   IProvider,
   MovieWebBaseProviderType,
+  SourcererEmbeds,
+  StreamWithQulaities,
 } from '../types/index.js';
 import { BaseMovieWebProvider } from './BaseMovieWebProvider.js';
 import {
   makeProviders,
   makeStandardFetcher,
+  Stream,
   targets,
 } from '@movie-web/providers';
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { CLI, IO } from '@iamstarcode/4u-lib';
 import { appPath } from '../config/constants.js';
 import chalk from 'chalk';
+import { vidplayExtractor } from '../utils/embed-extractors.js';
 
 interface StreamInfo {
   resolution: string;
   url: string;
 }
 
-export default class VidSrcToProvider extends BaseMovieWebProvider {
+export default class VidSrcToProvider
+  extends BaseMovieWebProvider
+  implements IHandleStream
+{
   constructor({
     options,
     query,
@@ -39,6 +47,47 @@ export default class VidSrcToProvider extends BaseMovieWebProvider {
     });
   }
 
+  override async handleEmbeds(
+    embeds: SourcererEmbeds
+  ): Promise<StreamWithQulaities | undefined> {
+    for (const embed of embeds) {
+      const output = await this.getProviders().runEmbedScraper({
+        id: embed.embedId,
+        url: embed.url,
+      });
+      if (embed.embedId == 'vidplay') {
+        const streamWithQualities = await vidplayExtractor(
+          output.stream[0] as any
+        );
+        if (streamWithQualities) {
+          return streamWithQualities;
+        }
+      }
+    }
+    return undefined;
+
+    // throw new Error('Method not implemented.');
+    /*    const output = await providers.runSourceScraper({
+    media: media,
+    id: provider,
+  }); */
+    /*     for (const embed of embeds) {
+      //console.log(embed.embedId);
+      const output: any = await providers.runEmbedScraper({
+        id: embed.embedId,
+        url: embed.url,
+      });
+      if (embed.embedId == 'vidplay') {
+        const streamWithQualities = await vidplayExtractor(
+          output.stream[0]
+        );
+        console.log(streamWithQualities, 'dcnjcnjfcnj');
+      }
+    } */
+  }
+  // handleEmbeds (embeds: { embedId: string; url: string }[]) => Promise<void>;
+
+  //rename to get Stream
   override async providerDownload({
     provider,
     media,
@@ -51,13 +100,33 @@ export default class VidSrcToProvider extends BaseMovieWebProvider {
       target: targets.ANY,
     });
 
-    const output: any = await providers.runAll({
+    const output = await providers.runSourceScraper({
       media: media,
-      sourceOrder: [provider],
+      id: provider,
     });
 
+    let playist = {};
+    if (output.stream || output.embeds) {
+      if (output.stream) {
+        //handle stream
+      } else {
+        //handle embeds
+        for (const embed of output.embeds) {
+          //console.log(embed.embedId);
+          const output: any = await providers.runEmbedScraper({
+            id: embed.embedId,
+            url: embed.url,
+          });
+          if (embed.embedId == 'vidplay') {
+            const streamWithQualities = await vidplayExtractor(
+              output.stream[0]
+            );
+          }
+        }
+      }
+    }
     if (output.stream) {
-      const res = await this.extractResolutionAndUrl(output.stream.playlist);
+      const res = await this.extractResolutionAndUrl('dfenfjehfj');
       const closestStream = this.findClosestResolution(
         this.options.quality,
         res
@@ -74,7 +143,7 @@ export default class VidSrcToProvider extends BaseMovieWebProvider {
         titleToDir
       );
 
-      if (this.options.subtitleOnly) {
+      /*     if (this.options.subtitleOnly) {
         CLI.printInfo('Downloading Subtitle...');
         await this.downloadSubtitle(output.stream.captions, media);
       } else {
@@ -92,7 +161,7 @@ export default class VidSrcToProvider extends BaseMovieWebProvider {
             `${chalk.blue('[INFO]')}Download complete \u2713 `
           )
         );
-      }
+      } */
     }
   }
 

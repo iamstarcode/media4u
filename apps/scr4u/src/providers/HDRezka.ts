@@ -31,28 +31,6 @@ export default class HDRezka extends BaseMovieWebProvider {
     });
   }
 
-  makeCustomFetcher(): Fetcher {
-    const fetcher = makeStandardFetcher(fetch);
-
-    ///console.log(url, 'nnjnjnjj');
-    /*    const url = '/engine/ajax/search.php';
-    const ops = {
-      headers: {
-        'X-Hdrezka-Android-App': '1',
-        'X-Hdrezka-Android-App-Version': '2.2.0',
-      },
-      baseUrl: 'https://hdrzk.org',
-      query: { q: 'Evil' },
-      //readHeaders: [],
-      //method: 'HEAD',
-    } as any; */
-    const customFetcher: Fetcher = (url, ops) => {
-      return fetcher(url, ops);
-    };
-
-    return customFetcher;
-  }
-
   override async providerDownload({
     provider,
     media,
@@ -67,12 +45,15 @@ export default class HDRezka extends BaseMovieWebProvider {
       //proxiedFetcher: this.makeCustomFetcher(url, ops),
     });
 
-    const output: any = await providers.runSourceScraper({
+    const output = await providers.runSourceScraper({
       id: provider,
       media: media as any,
     });
 
-    console.log(output.stream[0].qualities);
+    console.log(output, 'dfebjgfwfyuwgfu');
+
+    //console.log(output.stream[0].qualities);
+    ////
   }
 
   findClosestResolution(
