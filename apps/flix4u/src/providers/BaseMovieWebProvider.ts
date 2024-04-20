@@ -247,15 +247,11 @@ export class BaseMovieWebProvider implements IHandleStream {
       };
 
       spinner.stop();
-      searchText = `Searching for ${mediaInfo.title} sources...`;
-      spinner.text = searchText;
-      spinner.start();
 
-      const stream = await this.getStreamWithQualities({
+      const stream = await this.getStreamOrEmbedWithQualities({
         provider: this.providerName,
         media,
       });
-      spinner.stop();
 
       await this.downloadHlsOrFileStream(media, stream!);
     } else {
@@ -318,7 +314,7 @@ export class BaseMovieWebProvider implements IHandleStream {
               )} sources...`
             );
 
-            const stream = await this.getStreamWithQualities({
+            const stream = await this.getStreamOrEmbedWithQualities({
               provider: this.providerName,
               media,
             });
@@ -332,8 +328,7 @@ export class BaseMovieWebProvider implements IHandleStream {
     process.exit(0);
   }
 
-  //or rename to return embed or sources
-  async getStreamWithQualities({
+  async getStreamOrEmbedWithQualities({
     provider,
     media,
   }: {
@@ -341,22 +336,41 @@ export class BaseMovieWebProvider implements IHandleStream {
     media: ScrapeMedia;
   }): Promise<StreamWithQulaities | undefined> {
     const providers = this.getProviders();
+    const maxRetries = 3; // Adjust as needed (consider success rate and API limits)
+    let attempts = 0;
 
-    const output = await providers.runSourceScraper({
-      media: media,
-      id: provider,
-    });
+    ////saaasssssffdww
+    while (attempts < maxRetries) {
+      try {
+        const output = await providers.runSourceScraper({
+          media,
+          id: provider,
+        });
 
-    if (output.stream || output.embeds) {
-      if (output.stream) {
-        //handle stream TODO handle Stream
-        const stream = output.stream[0];
-        return stream as StreamWithQulaities;
-      } else {
-        const stream = this.handleEmbeds(output.embeds, media); //belongs children
-        return stream;
+        if (output.stream || output.embeds) {
+          if (output.stream) {
+            const stream = output.stream[0];
+            return stream as StreamWithQulaities;
+          } else {
+            const stream = this.handleEmbeds(output.embeds, media);
+            return stream;
+          }
+        }
+      } catch (error: any) {
+        attempts++;
+        CLI.printError(error);
+        CLI.printInfo(`Attempt ${attempts}/${maxRetries}: Retrying...`);
+
+        // Optional delay or backoff strategy for retries
+        if (attempts < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+        }
       }
     }
+
+    CLI.printError('Failed to retrieve stream or embed after retries.');
+    CLI.printInfo('Please try again, or use other providers!');
+    process.exit(0);
   }
 
   async downloadHlsOrFileStream(
@@ -366,24 +380,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     const choosen = this.findClosestResolution(stream?.qualities);
     const url = choosen![this.options.quality].url;
     const type = media.type;
-    if (!url) {
-      //stream not found
-      CLI.printError('No stream found');
-      process.exit(0);
-    }
-
-    //console.log(stream, 'rgfhgfhegfh');
-    if (media.type == 'movie') {
-    } else {
-    }
-
-    let message = 'Now Downloading ';
-    if (media.type == 'show') {
-      message += `${media.title} Season ${media.season.number} Episode ${media.episode.number}`;
-    } else {
-      message += `${media.title}`;
-    }
-    CLI.printInfo(message);
 
     //if we get a url we can inform
     const titleToDir = IO.sanitizeDirName(
@@ -409,13 +405,10 @@ export class BaseMovieWebProvider implements IHandleStream {
       if (this.options.subtitle) {
         await this.downloadSubtitle(stream.captions, media);
       }
-      console.log(
-        chalk.greenBright.bold(
-          `${chalk.blue('[INFO]')}Download complete \u2713 `
-        )
-      );
     }
   }
+
+  //sssbchbch
 
   async downloadSubtitle(captions: any[], media: any) {
     if (this.options.subtitle) {

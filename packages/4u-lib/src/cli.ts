@@ -158,5 +158,4 @@ export const printWarn = (message: string) => {
 };
 export const printError = (message: string) => {
   console.log(`${chalk.red('[ERROR]')} ${message}`);
-  process.exit(1);
 };

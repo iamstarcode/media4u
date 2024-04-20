@@ -14,6 +14,7 @@ import { convert, detect, parse } from 'subsrt-ts';
 import Subtitle from 'subsrt-ts';
 
 import { ContentCaption } from 'subsrt-ts/dist/types/handler';
+import { CLI } from './index.js';
 
 export type CaptionCueType = ContentCaption;
 
@@ -99,7 +100,16 @@ export async function downloadFile({
   };
 }) {
   const { filename, saveDir } = getFileAndFolderNameFromMedia(media);
+  const maxRetries = 3; // Adjust as needed (consider success rate and API limits)
+  let attempts = 0;
 
+  let message = 'Now Downloading ';
+  if (media.type == 'show') {
+    message += `${media.title} Season ${media.season.number} Episode ${media.episode.number}`;
+  } else {
+    message += `${media.title}`;
+  }
+  CLI.printInfo(message);
   const bar = new cliProgress.SingleBar(
     {
       format:
@@ -116,41 +126,57 @@ export async function downloadFile({
     cliProgress.Presets.legacy
   );
 
-  createDirIfNotFound(saveDir!);
+  while (attempts < maxRetries) {
+    try {
+      createDirIfNotFound(saveDir!);
 
-  const dl = new DownloaderHelper(url, saveDir!, {
-    fileName: { name: filename! },
-    override: true,
-    resumeIfFileExists: true,
-    resumeOnIncomplete: true,
-  });
+      const dl = new DownloaderHelper(url, saveDir, {
+        fileName: { name: filename! },
+        override: true,
+        resumeIfFileExists: true,
+        resumeOnIncomplete: true,
+      });
 
-  const size = await dl.getTotalSize();
+      const size = await dl.getTotalSize();
 
-  bar.start(100);
+      bar.start(100);
 
-  dl.on('error', (err) => {
-    bar.stop();
-    console.log('Download Failed', err);
-  });
+      dl.on('error', async (err) => {
+        attempts++;
+        bar.stop();
+        console.log(`Download Failed (Attempt ${attempts}/${maxRetries})`, err); // Log attempt number
 
-  dl.on('progress', ({ speed, progress, downloaded }) => {
-    bar.update(Math.ceil(progress), {
-      speed: humanFileSize(speed),
-      downloaded: humanFileSize(downloaded),
-      size: humanFileSize(size.total ?? 0),
-    });
-  });
+        // Optional delay or backoff strategy for retries
+        if (attempts < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+        }
+      });
 
-  dl.on('end', () => {
-    bar.stop();
-    console.log(chalk.greenBright.bold(`Download complete \u2713 `)); //
-  });
+      dl.on('progress', ({ speed, progress, downloaded }) => {
+        bar.update(Math.ceil(progress), {
+          speed: humanFileSize(speed),
+          downloaded: humanFileSize(downloaded),
+          size: humanFileSize(size.total ?? 0),
+        });
+      });
 
-  await dl.start().catch((err) => {
-    console.error(err);
-    bar.stop();
-  });
+      dl.on('end', () => {
+        bar.stop();
+        CLI.printInfo(chalk.greenBright.bold(`Download complete \u2713 `)); // ✔
+        return; // Exit the loop on successful download
+      });
+
+      await dl.start();
+    } catch (err) {
+      attempts++;
+      CLI.printError(
+        `Download Failed (Attempt retry ${attempts}/${maxRetries}) \n ${err}`
+      );
+      bar.stop();
+    }
+  }
+
+  console.error('Failed to download file after retries.');
 }
 
 export async function downloadStream({

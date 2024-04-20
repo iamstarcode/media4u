@@ -82,6 +82,79 @@ importers:
         specifier: ^5.0.4
         version: 5.2.2
 
+  apps/flix4u:
+    dependencies:
+      '@consumet/extensions':
+        specifier: ^1.5.2
+        version: 1.5.6
+      '@iamstarcode/4u-lib':
+        specifier: workspace:^
+        version: link:../../packages/4u-lib
+      '@lzwme/m3u8-dl':
+        specifier: github:iamstarcode/m3u8-dl#hot-fix
+        version: github.com/iamstarcode/m3u8-dl/198ded51dca63360f4c13c5e666fceee424d324e
+      '@movie-web/providers':
+        specifier: ^2.3.0
+        version: 2.3.0
+      axios:
+        specifier: ^1.4.0
+        version: 1.6.2
+      axios-cookiejar-support:
+        specifier: ^4.0.7
+        version: 4.0.7(axios@1.6.2)(tough-cookie@4.1.3)
+      chalk:
+        specifier: ^5.2.0
+        version: 5.3.0
+      cheerio:
+        specifier: 1.0.0-rc.12
+        version: 1.0.0-rc.12
+      cli-progress:
+        specifier: ^3.12.0
+        version: 3.12.0
+      commander:
+        specifier: ^10.0.1
+        version: 10.0.1
+      fluent-ffmpeg:
+        specifier: ^2.1.2
+        version: 2.1.2
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+      node-downloader-helper:
+        specifier: ^2.1.7
+        version: 2.1.9
+      node-fetch:
+        specifier: ^3.3.2
+        version: 3.3.2
+      ora:
+        specifier: ^7.0.1
+        version: 7.0.1
+      tough-cookie:
+        specifier: ^4.1.3
+        version: 4.1.3
+    devDependencies:
+      '@types/fluent-ffmpeg':
+        specifier: ^2.1.24
+        version: 2.1.24
+      '@types/lodash':
+        specifier: ^4.14.200
+        version: 4.14.201
+      '@types/node':
+        specifier: ^20.2.5
+        version: 20.12.7
+      '@types/tough-cookie':
+        specifier: ^4.0.2
+        version: 4.0.5
+      ts-node:
+        specifier: ^10.9.1
+        version: 10.9.1(@types/node@20.12.7)(typescript@5.2.2)
+      tsc-watch:
+        specifier: ^6.0.4
+        version: 6.0.4(typescript@5.2.2)
+      typescript:
+        specifier: ^5.0.4
+        version: 5.2.2
+
   apps/movies4u:
     dependencies:
       '@consumet/extensions':

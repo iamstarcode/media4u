@@ -46,25 +46,6 @@ export default class VidSrcToProvider
       }
     }
     return undefined;
-
-    // throw new Error('Method not implemented.');
-    /*    const output = await providers.runSourceScraper({
-    media: media,
-    id: provider,
-  }); */
-    /*     for (const embed of embeds) {
-      //console.log(embed.embedId);
-      const output: any = await providers.runEmbedScraper({
-        id: embed.embedId,
-        url: embed.url,
-      });
-      if (embed.embedId == 'vidplay') {
-        const streamWithQualities = await vidplayExtractor(
-          output.stream[0]
-        );
-        console.log(streamWithQualities, 'dcnjcnjfcnj');
-      }
-    } */
   }
 
   async vidplayExtractor(
