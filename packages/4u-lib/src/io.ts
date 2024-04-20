@@ -175,7 +175,7 @@ export async function downloadStream({
     showProgress: true,
     filename,
     cacheDir,
-    saveDir: saveDir,
+    saveDir,
     headers,
   });
 
@@ -227,7 +227,7 @@ export function getFileAndFolderNameFromMedia(media: {
   season: { number: number };
 }) {
   let filename = '';
-  let saveDir: string | undefined = '';
+  let saveDir: string = '';
 
   if (
     media.type.toLocaleLowerCase() == 'tv' ||
@@ -252,7 +252,7 @@ export function getFileAndFolderNameFromMedia(media: {
       sanitizeFileName(media.title) + '.' + seasonString + episodeString;
   } else {
     filename = sanitizeFileName(media.title);
-    saveDir = undefined;
+    saveDir = path.resolve('.');
   }
 
   return { filename, saveDir };

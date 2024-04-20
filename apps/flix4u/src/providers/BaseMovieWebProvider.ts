@@ -77,9 +77,8 @@ export class BaseMovieWebProvider implements IHandleStream {
   ): Promise<StreamWithQulaities | undefined> {
     throw new Error('Method not implemented.');
   }
-
-  async providerDownload({}: { provider: string; media: any }): Promise<void> {}
   async downloadStream({}: { provider: string; media: any }): Promise<void> {}
+
   async run() {
     const medias: IMediResult[] = await this.getMedia();
 
@@ -94,9 +93,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     const mediaInfo: IMediaInfo = await this.getMediaInfo(media);
 
     await this.handleDownload({ mediaInfo });
-
-    if (mediaInfo.type == 'tv') {
-    }
   }
 
   async getMedia(): Promise<IMediResult[]> {
@@ -230,7 +226,38 @@ export class BaseMovieWebProvider implements IHandleStream {
   }
 
   async handleDownload({ mediaInfo }: { mediaInfo: IMediaInfo }) {
+    const spinner = this.getSpinner();
     if (mediaInfo.type == 'movie') {
+      let searchText = `Searching for ${mediaInfo.title} info...`;
+      spinner.text = searchText;
+      spinner.start();
+
+      const response = await fetch(
+        `${this.API_BASE_URL}/movie/${mediaInfo.id}/`
+      );
+
+      const movieData = await response.json();
+
+      const media: ScrapeMedia = {
+        title: movieData.title,
+        releaseYear: +movieData.release_date.substring(0, 4),
+        tmdbId: movieData.id,
+        type: 'movie',
+        imdbId: movieData.imdb_id,
+      };
+
+      spinner.stop();
+      searchText = `Searching for ${mediaInfo.title} sources...`;
+      spinner.text = searchText;
+      spinner.start();
+
+      const stream = await this.getStreamWithQualities({
+        provider: this.providerName,
+        media,
+      });
+      spinner.stop();
+
+      await this.downloadHlsOrFileStream(media, stream!);
     } else {
       for (let i = 0; i < this.options.episodes.length; i++) {
         const season = this.options.episodes[i];
@@ -283,7 +310,7 @@ export class BaseMovieWebProvider implements IHandleStream {
               },
             };
 
-            console.log(
+            CLI.printInfo(
               `Searching for ${chalk.yellow(media.title)} Season ${chalk.yellow(
                 seasonData.season_number
               )} Episode ${chalk.yellow(
@@ -296,9 +323,7 @@ export class BaseMovieWebProvider implements IHandleStream {
               media,
             });
 
-            await this.downloadHlsStream(media, stream!);
-
-            //await this.providerDownload({ provider: this.providerName, media });
+            await this.downloadHlsOrFileStream(media, stream!);
           }
         }
       }
@@ -325,7 +350,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     if (output.stream || output.embeds) {
       if (output.stream) {
         //handle stream TODO handle Stream
-        // console.log(output.stream, 'sjjhjddjbhdbc');
         const stream = output.stream[0];
         return stream as StreamWithQulaities;
       } else {
@@ -335,21 +359,32 @@ export class BaseMovieWebProvider implements IHandleStream {
     }
   }
 
-  async downloadHlsStream(media: ScrapeMedia, stream: StreamWithQulaities) {
+  async downloadHlsOrFileStream(
+    media: ScrapeMedia,
+    stream: StreamWithQulaities
+  ) {
     const choosen = this.findClosestResolution(stream?.qualities);
-
     const url = choosen![this.options.quality].url;
-
-    if (url) {
-      const type = media.type;
-      let message = 'Now Downloading ';
-      if (media.type == 'show') {
-        message += `${media.title} Season ${media.season.number} Episode ${media.episode.number}`;
-      } else {
-        message += `${media.title}`;
-      }
-      CLI.printInfo(message);
+    const type = media.type;
+    if (!url) {
+      //stream not found
+      CLI.printError('No stream found');
+      process.exit(0);
     }
+
+    //console.log(stream, 'rgfhgfhegfh');
+    if (media.type == 'movie') {
+    } else {
+    }
+
+    let message = 'Now Downloading ';
+    if (media.type == 'show') {
+      message += `${media.title} Season ${media.season.number} Episode ${media.episode.number}`;
+    } else {
+      message += `${media.title}`;
+    }
+    CLI.printInfo(message);
+
     //if we get a url we can inform
     const titleToDir = IO.sanitizeDirName(
       Buffer.from(url).toString('base64').substring(0, 24)
@@ -408,7 +443,6 @@ export class BaseMovieWebProvider implements IHandleStream {
     let closestResolution: Quality | null = null;
     let minDifference = Number.MAX_VALUE;
 
-    console.log(qualities, 'ftftftft');
     Object.keys(qualities).forEach((resolutionKey) => {
       const resolution = parseInt(resolutionKey);
       const difference = Math.abs(this.options.quality - resolution);
@@ -420,6 +454,7 @@ export class BaseMovieWebProvider implements IHandleStream {
 
     return closestResolution;
   }
+
   getSpinner() {
     return this.spinner;
   }
