@@ -6,6 +6,7 @@ import { homedir } from 'os';
 import path from 'path';
 
 import { IBaseProvider, IProvider } from '../types/index.js';
+import { appPath } from '../config/constants.js';
 
 export default class FlixHQProvider extends BaseProvider {
   constructor({
@@ -16,7 +17,7 @@ export default class FlixHQProvider extends BaseProvider {
       options,
       query,
       provider: new MOVIES.FlixHQ(),
-      searchPath: path.join(homedir(), 'flix4u', 'FlixHQ', 'Searches'),
+      searchPath: path.join(appPath, 'FlixHQ', 'Searches'),
       providerName: 'flixhq',
     });
   }

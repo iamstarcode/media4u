@@ -28,6 +28,7 @@ import {
   makeStandardFetcher,
   targets,
 } from '@movie-web/providers';
+import { appPath } from '../config/constants.js';
 
 export interface IHandleMediaDownload {
   movieInfo: IMovieInfo;
@@ -547,8 +548,7 @@ export class BaseProvider {
     );
 
     const cacheDir = path.join(
-      homedir(),
-      'flix4u',
+      appPath,
       this.providerName,
       'cache',
       titleToDir,
@@ -580,13 +580,7 @@ export class BaseProvider {
       Buffer.from(choosen.url).toString('base64').substring(0, 24)
     );
 
-    const cacheDir = path.join(
-      homedir(),
-      'flix4u',
-      this.providerName,
-      'cache',
-      titleToDir
-    );
+    const cacheDir = path.join(appPath, this.providerName, 'cache', titleToDir);
 
     const name: string = movieInfo.title.toString();
 

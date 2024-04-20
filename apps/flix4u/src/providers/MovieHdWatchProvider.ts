@@ -6,6 +6,7 @@ import { homedir } from 'os';
 import path from 'path';
 
 import { IBaseProvider, IProvider } from '../types/index.js';
+import { appPath } from '../config/constants.js';
 
 export class MovieHdWatchProvider extends BaseProvider {
   constructor({
@@ -16,7 +17,7 @@ export class MovieHdWatchProvider extends BaseProvider {
       options,
       query,
       provider: new MOVIES.MovieHdWatch(),
-      searchPath: path.join(homedir(), 'flix4u', 'MovieHdWatch', 'Searches'),
+      searchPath: path.join(appPath, 'MovieHdWatch', 'Searches'),
       providerName: 'moviehdwatch',
     });
   }

@@ -6,4 +6,4 @@ import { homedir } from 'os';
 
 export const { __dirname, __filename } = fileDirName(import.meta);
 
-export const appPath = path.join(homedir(), 'screen4u');
+export const appPath = path.join(homedir(), 'flix4u');

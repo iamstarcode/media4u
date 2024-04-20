@@ -70,6 +70,7 @@ export class BaseMovieWebProvider implements IHandleStream {
     this.spinner = ora({ spinner: 'dots12' });
   }
 
+  //Overrides
   handleEmbeds(
     embeds: SourcererEmbeds,
     media: any
@@ -77,9 +78,7 @@ export class BaseMovieWebProvider implements IHandleStream {
     throw new Error('Method not implemented.');
   }
 
-  //Overrides
   async providerDownload({}: { provider: string; media: any }): Promise<void> {}
-  //async handleEmbeds(embeds: SourcererEmbeds): Promise<void> {}
   async downloadStream({}: { provider: string; media: any }): Promise<void> {}
   async run() {
     const medias: IMediResult[] = await this.getMedia();
