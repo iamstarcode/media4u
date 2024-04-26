@@ -4,45 +4,28 @@ import {
   IAnimeResult,
   MediaFormat,
   MediaStatus,
-  SubOrSub,
 } from '@consumet/extensions';
 import _ from 'lodash';
 
-import { BaseProvider, IGetMediType } from './BaseProvider.js';
-import { homedir } from 'os';
+import { BaseProvider } from './BaseProvider.js';
 import path from 'path';
 
-import { IProvider } from '../types/index.js';
-import { readFileSync } from 'fs';
 import { load } from 'cheerio';
 import { IO } from '@iamstarcode/4u-lib';
 import chalk from 'chalk';
+import { IBaseProvider } from './BaseProviderX.js';
+import { appPath } from '../config/constants.js';
 
 export class GogoanimeProvider extends BaseProvider {
-  constructor({ options, query }: IProvider) {
+  constructor({ options, query }: IBaseProvider) {
     super({
       options,
       query,
       provider: new ANIME.Gogoanime(),
-      searchPath: path.join(homedir(), 'anim4u', 'gogoanime', 'Searches'),
-      _provider: 'gogoanime',
+      searchPath: path.join(appPath, 'gogoanime', 'Searches'),
+      providerName: 'gogoanime',
     });
   }
-  /////////
-
-  /*   async getMediaType({
-    media,
-    type,
-  }: IGetMediType): Promise<MediaFormat.MOVIE | MediaFormat.TV> {
-    const linksPath = this.getLinksPath({ title: media.title });
-    const linksString = readFileSync(linksPath).toString();
-    const animeInfo: IAnimeInfo = JSON.parse(linksString);
-    if (animeInfo.type?.toLocaleLowerCase().includes('movie')) {
-      return MediaFormat.MOVIE;
-    } else {
-      return MediaFormat.TV;
-    }
-  } */
 
   async fetchAnimeInfo(anime: IAnimeResult): Promise<any> {
     const spinner = this.getSpinner();
@@ -57,11 +40,8 @@ export class GogoanimeProvider extends BaseProvider {
     const baseUrl = 'https://gogoanime3.co';
     const ajaxUrl = 'https://ajax.gogocdn.net/ajax';
 
-    //const res = await this.client.get(id);
-    console.log(anime, 'dbehde');
     const res = await fetch(anime.url!);
     const data = await res.text();
-    //console.log(data);
 
     const animeInfo: IAnimeInfo = {
       id: '',
@@ -78,20 +58,22 @@ export class GogoanimeProvider extends BaseProvider {
     )
       .text()
       .trim();
+
     animeInfo.url = anime.url;
     animeInfo.image = $('div.anime_info_body_bg > img').attr('src');
     animeInfo.releaseDate = $('div.anime_info_body_bg > p:nth-child(8)')
       .text()
       .trim()
       .split('Released: ')[1];
+
     animeInfo.description = $('div.anime_info_body_bg > div:nth-child(6)')
       .text()
       .trim()
       .replace('Plot Summary: ', '');
 
-    animeInfo.subOrDub = animeInfo.title.toLowerCase().includes('dub')
-      ? SubOrSub.DUB
-      : SubOrSub.SUB;
+    animeInfo.hasDub = animeInfo.title.toLowerCase().includes('dub')
+      ? true
+      : false;
 
     animeInfo.type = $('div.anime_info_body_bg > p:nth-child(4) > a')
       .text()

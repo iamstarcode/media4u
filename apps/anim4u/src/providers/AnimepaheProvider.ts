@@ -6,7 +6,7 @@ import { BaseProvider } from './BaseProvider.js';
 import _ from 'lodash';
 
 import { ANIME } from '@consumet/extensions';
-import { IProvider } from '../types/index.js';
+import { IBaseProvider } from './BaseProviderX.js';
 
 interface IEpisode {
   id: string;
@@ -21,13 +21,13 @@ interface ILinks {
 }
 
 export class AnimepaheProvider extends BaseProvider {
-  constructor({ options, query }: IProvider) {
+  constructor({ options, query }: IBaseProvider) {
     super({
       options,
       query,
       provider: new ANIME.AnimePahe(),
       searchPath: path.join(homedir(), 'anim4u', 'animepahe', 'Searches'),
-      _provider: 'animepahe',
+      providerName: 'animepahe',
     });
   }
 }

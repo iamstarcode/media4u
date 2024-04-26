@@ -16,7 +16,6 @@ import {
   IGetEpisodeSources,
   IHandleMediaDownload,
 } from './BaseProvider.js';
-import { IProvider } from '../types/index.js';
 import { IO } from '@iamstarcode/4u-lib';
 
 import axios from 'axios';
@@ -32,15 +31,16 @@ import { humanFileSize } from '../utils/human-file-szie.js';
 import * as cheerio from 'cheerio';
 
 import cliProgress from 'cli-progress';
+import { IBaseProvider } from './BaseProviderX.js';
 
 export class AnimepaheProvider extends BaseProvider {
-  constructor({ options, query }: IProvider) {
+  constructor({ options, query }: IBaseProvider) {
     super({
       options,
       query,
       provider: new ANIME.AnimePahe(),
       searchPath: path.join(homedir(), 'anim4u', 'animepahe2', 'Searches'),
-      _provider: 'animepahe2',
+      providerName: 'animepahe2',
     });
   }
 
@@ -312,7 +312,7 @@ export class AnimepaheProvider extends BaseProvider {
     let hasNextPage: boolean;
 
     do {
-      const data = await this.provider.search(this.query, page);
+      const data: any = await this.provider.search(this.query, page);
       if (data.hasNextPage) {
         hasNextPage = true;
         page++;

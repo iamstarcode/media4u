@@ -15,7 +15,7 @@ const downloadAction = async (
   _query: [IBaseProvider['providerName'], string],
   options: OptionsType
 ) => {
-  const streamedEpisodes = CLI.handleEpisodes(options.episodes);
+  const streamedEpisodes = CLI.parseSeasonalEpisodes(options.episodes);
   options.episodes = streamedEpisodes;
 
   const [providerName, query] = _query;

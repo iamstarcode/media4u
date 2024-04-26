@@ -14,7 +14,7 @@ export function collect(value: any, previous: any[]) {
   return previous.concat([value]);
 }
 
-export const checkFormat = (episodes: string[]) => {
+export const checkSeasonalEpisodesFormat = (episodes: string[]) => {
   for (let i = 0; i < episodes.length; i++) {
     const episode = episodes[i];
     const regex = /^(s|S)([1-9]\d*):(\d+(-\d+)?)(,(\d+(-\d+)?))*$/;
@@ -33,8 +33,72 @@ export const checkFormat = (episodes: string[]) => {
   }
 };
 
-export const handleEpisodes = (collectedEpisodes: string[]) => {
-  checkFormat(collectedEpisodes);
+function checkEpisodesFormat(episodesStr: string) {
+  const regex = /^(?!0\d)(\d+(-\d+)?)(,\d+(-\d+)?)*$/;
+
+  if (!regex.test(episodesStr)) {
+    printInfo(
+      `Episode is not written correctly: ${chalk.redBright.bgWhite(
+        episodesStr
+      )}`
+    );
+    printInfo(
+      'It should be in this format:  [episode_number,[episode_number-episode_number] '
+    );
+    printInfo('Example: 1-3,5,8-10 == Episode: 1 to 3, 5 and 8 to 10');
+
+    process.exit(1);
+  }
+}
+
+export function parseEpisodes(episodesStr: string): number[] {
+  checkEpisodesFormat(episodesStr);
+  const episodes: Set<number> = new Set();
+
+  // Split the input string by commas
+  const segments: string[] = episodesStr.split(',');
+
+  segments.forEach((segment) => {
+    if (segment.includes('-')) {
+      // If segment is a range
+      const [start, end] = segment.split('-').map(Number);
+      for (let i = start; i <= end; i++) {
+        episodes.add(i);
+      }
+    } else {
+      // If segment is a single episode
+      episodes.add(Number(segment));
+    }
+  });
+
+  // Convert Set to array
+  return Array.from(episodes);
+}
+
+function parseRanges(input: string): number[] {
+  const ranges = input.split(',');
+  const numbers: Set<number> = new Set();
+
+  ranges.forEach((range) => {
+    const [start, end] = range.split('-').map(Number);
+    if (!isNaN(start)) {
+      if (!isNaN(end)) {
+        const min = Math.min(start, end);
+        const max = Math.max(start, end);
+        for (let i = min; i <= max; i++) {
+          numbers.add(i);
+        }
+      } else {
+        numbers.add(start);
+      }
+    }
+  });
+
+  return Array.from(numbers);
+}
+
+export const parseSeasonalEpisodes = (collectedEpisodes: string[]) => {
+  checkSeasonalEpisodesFormat(collectedEpisodes);
 
   let eps: any[] = [];
   for (let i = 0; i < collectedEpisodes.length; i++) {
@@ -68,28 +132,6 @@ export const handleEpisodes = (collectedEpisodes: string[]) => {
 
   return mergedArray;
 };
-
-function parseRanges(input: string): number[] {
-  const ranges = input.split(',');
-  const numbers: Set<number> = new Set();
-
-  ranges.forEach((range) => {
-    const [start, end] = range.split('-').map(Number);
-    if (!isNaN(start)) {
-      if (!isNaN(end)) {
-        const min = Math.min(start, end);
-        const max = Math.max(start, end);
-        for (let i = min; i <= max; i++) {
-          numbers.add(i);
-        }
-      } else {
-        numbers.add(start);
-      }
-    }
-  });
-
-  return Array.from(numbers);
-}
 
 export const handleIfNewVersion = async (version: string, pkgName: string) => {
   const response = await fetch(`https://registry.npmjs.org/${pkgName}`);
@@ -153,9 +195,11 @@ export async function inquireQuality() {
 export const printInfo = (message: string) => {
   console.log(`${chalk.blue('[INFO]')} ${message}`);
 };
+
 export const printWarn = (message: string) => {
   console.log(`${chalk.yellow('[WARNING]')} ${message}`);
 };
+
 export const printError = (message: string) => {
   console.log(`${chalk.red('[ERROR]')} ${message}`);
 };

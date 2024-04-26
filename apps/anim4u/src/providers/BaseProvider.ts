@@ -19,6 +19,7 @@ import chalk from 'chalk';
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { homedir } from 'node:os';
 import { IO, CLI } from '@iamstarcode/4u-lib';
+import { AnimeParser, BaseParser } from '@consumet/extensions/dist/models';
 
 export interface IGetMediType {
   type?: string;
@@ -40,9 +41,9 @@ export interface IHandleMediaDownload {
 export class BaseProvider {
   options: OptionsType;
   query: string;
-  provider: ISupportedProvider;
+  provider: AnimeParser;
   searchPath: string;
-  _provider: string;
+  providerName: string;
   spinner: Ora;
 
   constructor({
@@ -50,13 +51,13 @@ export class BaseProvider {
     query,
     provider,
     searchPath,
-    _provider,
+    providerName,
   }: IBaseProvider) {
     this.options = options;
     this.query = query;
     this.provider = provider;
     this.searchPath = searchPath;
-    this._provider = _provider;
+    this.providerName = providerName;
     this.spinner = ora({ spinner: 'dots12' });
   }
 
@@ -102,9 +103,9 @@ export class BaseProvider {
   async fetchAnime(): Promise<IAnimeResult[]> {
     const spinner = this.getSpinner();
     let providerColor;
-    if (this._provider == 'animepahe2' || this._provider == 'animepahe') {
+    if (this.providerName == 'animepahe2' || this.providerName == 'animepahe') {
       providerColor = chalk.hex('#d5015b')('Animepahe');
-    } else if (this._provider == 'gogoanime') {
+    } else if (this.providerName == 'gogoanime') {
       providerColor = chalk.greenBright(this.provider.name);
     } else {
       providerColor = chalk.yellow(this.provider.name);
@@ -121,7 +122,7 @@ export class BaseProvider {
     let hasNextPage: boolean;
 
     do {
-      const data = await this.provider.search(this.query, page);
+      const data: any = await this.provider.search(this.query, page);
       if (data.hasNextPage) {
         hasNextPage = true;
         page++;
@@ -206,6 +207,7 @@ export class BaseProvider {
 
     return linksPath;
   }
+
   getSpinner() {
     return this.spinner;
   }
@@ -409,7 +411,7 @@ export class BaseProvider {
     const cacheDir = path.join(
       homedir(),
       'anim4u',
-      this._provider,
+      this.providerName,
       'cache',
       titleToDir,
       'E' + episode
@@ -443,7 +445,7 @@ export class BaseProvider {
     const cacheDir = path.join(
       homedir(),
       'anim4u',
-      this._provider,
+      this.providerName,
       'cache',
       titleToDir
     );

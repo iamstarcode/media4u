@@ -1,5 +1,6 @@
 import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime.js';
 import AnimePahe from '@consumet/extensions/dist/providers/anime/animepahe.js';
+import { AnimeParser, BaseParser } from '@consumet/extensions/dist/models';
 
 export interface IAnimeResult {
   name?: string;
@@ -45,18 +46,12 @@ export type OptionsType = {
   quality: number;
 };
 
-export type Provider = 'animepahe' | 'animepahe2' | 'gogoanime';
+export type Provider = 'animepahe' | 'animepahe2' | 'gogoanime' | 'aniwave';
 export type ISupportedProvider = Gogoanime | AnimePahe;
 export interface IBaseProvider {
   options: OptionsType;
   query: string;
-  provider: ISupportedProvider;
+  provider: AnimeParser;
   searchPath: string;
-  _provider: string;
-}
-
-export interface IProvider {
-  options: OptionsType;
-  query: string;
-  provider: string;
+  providerName: string;
 }
