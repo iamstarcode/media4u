@@ -463,7 +463,6 @@ export class BaseProvider {
         _episode: this.options.episodes,
       });
 
-      ///
       spinner.stop();
     } else if (movieInfo.type == TvType.TVSERIES) {
       //TODO find a better name

@@ -1,7 +1,7 @@
 {
   "bin": "./build/cli.js",
   "name": "flix4u",
-  "version": "0.0.0-beta1",
+  "version": "0.0.1-rc.1",
   "description": "",
   "main": "build/cli.js",
   "scripts": {
@@ -21,8 +21,8 @@
   "dependencies": {
     "@consumet/extensions": "^1.5.2",
     "@iamstarcode/4u-lib": "workspace:^",
-    "@lzwme/m3u8-dl": "github:iamstarcode/m3u8-dl#hot-fix",
-    "@movie-web/providers": "^2.3.0",
+    "@lzwme/m3u8-dl": "^0.0.8",
+    "@movie-web/providers": "github:sussy-code/providers",
     "axios": "^1.4.0",
     "axios-cookiejar-support": "^4.0.7",
     "chalk": "^5.2.0",
