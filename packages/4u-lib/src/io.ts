@@ -197,6 +197,7 @@ export async function downloadStream({
 }) {
   const { filename, saveDir } = getFileAndFolderNameFromMedia(media);
 
+  createDirIfNotFound(cacheDir);
   await m3u8Download(url, {
     showProgress: true,
     filename,

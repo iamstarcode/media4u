@@ -26,7 +26,7 @@ export default class HDRezka extends BaseMovieWebProvider {
     super({
       options,
       query,
-      searchPath: path.join(appPath, 'HDRezka', 'Searches'),
+      searchPath: path.join(appPath, 'Searches'),
       providerName: 'hdrezka',
     });
   }

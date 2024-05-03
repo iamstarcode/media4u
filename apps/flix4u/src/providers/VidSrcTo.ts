@@ -23,7 +23,7 @@ export default class VidSrcToProvider
     super({
       options,
       query,
-      searchPath: path.join(appPath, 'VidSrcTo', 'Searches'),
+      searchPath: path.join(appPath, 'Searches'),
       providerName: 'vidsrcto',
     });
   }
