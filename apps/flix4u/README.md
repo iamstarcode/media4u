@@ -145,7 +145,8 @@ flix4u clear [provider|all]
 
 These are the currently supported providers, we plan to add more soon. Some providers may stop working unexpectedly, and we try our best to have it fixed, and some time might be due to providers server runtime being down.
 
-| Website                               | Searcher Prefix | Available Qualities     | Content Extension |
-| ------------------------------------- | --------------- | ----------------------- | ----------------- |
-| [VidSrcTo](https://vidsrc.to/)        | `animepahe`     | 360p, 720p, 1080p       | MP4               |
-| [HDRezka](https://www.animepahe.com/) | `animepahe2`    | 360p, 480p, 720p, 1080p | MP4 / TS          |
+| Website    | Searcher Prefix | Available Qualities     | Content Extension |
+| ---------- | --------------- | ----------------------- | ----------------- |
+| [VidSrcTo] | `vidsrcto`      | 360p, 720p, 1080p       | MP4               |
+| [HDRezka]  | `hdrezka`       | 360p, 480p, 720p, 1080p | MP4 / TS          |
+| [WarezCDN] | `warezcdn`      | 360p, 480p, 720p, 1080p | MP4 / TS          |

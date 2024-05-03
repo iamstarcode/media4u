@@ -91,11 +91,11 @@ importers:
         specifier: workspace:^
         version: link:../../packages/4u-lib
       '@lzwme/m3u8-dl':
-        specifier: github:iamstarcode/m3u8-dl#hot-fix
-        version: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/198ded51dca63360f4c13c5e666fceee424d324e
+        specifier: ^0.0.8
+        version: 0.0.8
       '@movie-web/providers':
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: github:sussy-code/providers
+        version: https://codeload.github.com/sussy-code/providers/tar.gz/ff3ceecc37f874967950574b0a3d3a922016cbd4
       axios:
         specifier: ^1.4.0
         version: 1.6.2
@@ -351,20 +351,15 @@ packages:
     engines: {node: '>=14.18'}
     hasBin: true
 
-  '@lzwme/m3u8-dl@https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/198ded51dca63360f4c13c5e666fceee424d324e':
-    resolution: {tarball: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/198ded51dca63360f4c13c5e666fceee424d324e}
-    version: 0.0.7
-    engines: {node: '>=14.18'}
-    hasBin: true
-
   '@lzwme/m3u8-dl@https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049':
     resolution: {tarball: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049}
     version: 0.0.7
     engines: {node: '>=14.18'}
     hasBin: true
 
-  '@movie-web/providers@2.3.0':
-    resolution: {integrity: sha512-jr3C9alAODEyxgWSBMZ6LlrubrZCfpraTuunf7sPpY19WcV8rHbfz1kxeLdBXC2BqPfgQmipVr+KsXvCQqKhXw==}
+  '@movie-web/providers@https://codeload.github.com/sussy-code/providers/tar.gz/ff3ceecc37f874967950574b0a3d3a922016cbd4':
+    resolution: {tarball: https://codeload.github.com/sussy-code/providers/tar.gz/ff3ceecc37f874967950574b0a3d3a922016cbd4}
+    version: 2.3.0
 
   '@tsconfig/node10@1.0.9':
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
@@ -1717,18 +1712,6 @@ snapshots:
       - compressing
       - windows-process-tree
 
-  '@lzwme/m3u8-dl@https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/198ded51dca63360f4c13c5e666fceee424d324e':
-    dependencies:
-      '@lzwme/fe-utils': 1.7.2
-      commander: 12.0.0
-      console-log-colors: 0.4.0
-      enquirer: 2.4.1
-      m3u8-parser: 7.1.0
-    transitivePeerDependencies:
-      - '@iarna/toml'
-      - compressing
-      - windows-process-tree
-
   '@lzwme/m3u8-dl@https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049':
     dependencies:
       '@lzwme/fe-utils': 1.7.2
@@ -1741,7 +1724,7 @@ snapshots:
       - compressing
       - windows-process-tree
 
-  '@movie-web/providers@2.3.0':
+  '@movie-web/providers@https://codeload.github.com/sussy-code/providers/tar.gz/ff3ceecc37f874967950574b0a3d3a922016cbd4':
     dependencies:
       cheerio: 1.0.0-rc.12
       cookie: 0.6.0

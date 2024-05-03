@@ -67,47 +67,6 @@ export class BaseProvider {
   }
 
   async run() {
-    const providers = makeProviders({
-      fetcher: makeStandardFetcher(fetch),
-      target: targets.ANY, // target native app streams
-    });
-
-    const mediax: any = {
-      title: 'Dr. STONE',
-      releaseYear: 2019,
-      tmdbId: '86031',
-      type: 'show',
-      imdbId: 'tt9679542',
-      episode: {
-        number: 3,
-        title: 'Weapons of Science',
-        tmdbId: '1814295',
-      },
-      season: {
-        number: 1,
-        title: 'Season 1',
-        tmdbId: '117113',
-      },
-    };
-    // scrape a stream
-    const stream = await providers.runAll({
-      media: mediax,
-    });
-
-    // scrape a stream, but prioritize flixhq above all
-    // (other scrapers are still run if flixhq fails, it just has priority)
-    const flixhqStream = await providers.runAll({
-      media: mediax,
-      sourceOrder: ['flixhq'],
-    });
-
-    console.log(flixhqStream, 'mxskmksxmksmxk');
-
-    /*   const output = await providers.runEmbedScraper({
-      id: 'vidcloud',
-      url: 'https://flixhq.to/watch-movie/watch-hamilton-62097.2767351',
-    }); */
-
     let medias: IMovieResult[] = await this.getMedia();
 
     let media: any = await CLI.inquireMedia(medias);
@@ -281,7 +240,7 @@ export class BaseProvider {
             break;
           }
           if (soredted.length == i + 1) {
-            console.log('last');
+            //   console.log('last');
             if (match[1] == 'auto') {
               choosen = soredted[i - 1];
             } else {
@@ -362,21 +321,24 @@ export class BaseProvider {
     )} ${media} download link`;
 
     const episode = _episode as IMovieEpisode;
+
+    console.log(episode.id, _movieInfo.id, 'djcnjfnjcnj');
     spinner.start();
 
-    await this.provider
-      .fetchEpisodeServers('1239892', 'tv/watch-from-77455')
+    /*     await this.provider
+      .fetchEpisodeServers(episode.id, _movieInfo.id)
       .then((data) => {
-        console.log(data);
-      });
+        console.log(data, 'dwhvdhwdhwd');
+      }); */
 
+    //  console.log(episode.id, _movieInfo.id, 'djcnjfnjcnj');
     const srcs = await this.provider.fetchEpisodeSources(
-      '1239892',
-      'tv/watch-from-77455'
-      //StreamingServers.MixDrop
+      episode.id,
+      _movieInfo.id,
+      StreamingServers.UpCloud
     );
 
-    console.log(srcs, 'ddddddddddddddda');
+    //console.log(srcs, 'ddddddddddddddda');
 
     spinner.stop();
     return srcs;
