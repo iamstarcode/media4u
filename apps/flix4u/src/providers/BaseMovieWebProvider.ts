@@ -255,9 +255,9 @@ export class BaseMovieWebProvider implements IHandleStream {
         if (season.season > mediaInfo.number_of_seasons!) {
           continue;
         } else {
-          const searchText = `Searching for ${mediaInfo.title} Season ${season.season} episodes...`;
-          this.getSpinner().text = searchText;
-          this.getSpinner().start();
+          let searchText = `Searching for ${mediaInfo.title} Season ${season.season} episodes...`;
+          spinner.text = searchText;
+          spinner.start();
 
           const response = await fetch(
             `${this.API_BASE_URL}/tv/${mediaInfo.id}/season/${season.season}`
@@ -300,19 +300,20 @@ export class BaseMovieWebProvider implements IHandleStream {
               },
             };
 
-            CLI.printInfo(
-              `Searching for ${chalk.yellow(media.title)} Season ${chalk.yellow(
-                seasonData.season_number
-              )} Episode ${chalk.yellow(
-                foundEpisode.episode_number
-              )} sources...`
-            );
+            spinner.text = `Searching for ${chalk.yellow(
+              media.title
+            )} Season ${chalk.yellow(
+              seasonData.season_number
+            )} Episode ${chalk.yellow(foundEpisode.episode_number)} sources...`;
+
+            spinner.start();
 
             const stream = await this.getStreamOrEmbedWithQualities({
               provider: this.providerName,
               media,
             });
 
+            spinner.stop();
             await this.downloadHlsOrFileStream(media, stream!);
           }
         }

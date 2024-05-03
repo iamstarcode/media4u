@@ -11,13 +11,10 @@
     "mhd": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter flix4u mhd",
     "vidsrcto": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter flix4u vidsrcto",
     "hdrezka": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter flix4u hdrezka",
+    "warezcdn": "pnpm --filter @iamstarcode/4u-lib build && pnpm --filter flix4u warezcdn",
     "prepare": "husky install"
   },
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "devDependencies": {
     "@commitlint/cli": "^17.8.1",
     "@commitlint/config-conventional": "^17.8.1",
