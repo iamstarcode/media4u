@@ -28,7 +28,7 @@ export default class VidSrcToProvider
     });
   }
 
-  override async handleEmbeds(
+  async handleEmbeds(
     embeds: SourcererEmbeds
   ): Promise<StreamWithQulaities | undefined> {
     for (const embed of embeds) {

@@ -70,8 +70,7 @@ export class BaseMovieWebProvider implements IHandleStream {
 
   //Overrides
   handleEmbeds(
-    embeds: SourcererEmbeds,
-    media: any
+    embeds: SourcererEmbeds
   ): Promise<StreamWithQulaities | undefined> {
     throw new Error('Method not implemented.');
   }
@@ -346,7 +345,7 @@ export class BaseMovieWebProvider implements IHandleStream {
             const stream = output.stream[0];
             return stream as StreamWithQulaities;
           } else {
-            const stream = this.handleEmbeds(output.embeds, media);
+            const stream = this.handleEmbeds(output.embeds);
             return stream;
           }
         }
@@ -380,16 +379,16 @@ export class BaseMovieWebProvider implements IHandleStream {
       await this.downloadSubtitle(stream.captions, media);
     } else {
       if (stream.type == 'hls') {
-        const titleToDir = IO.sanitizeDirName(
-          Buffer.from(url).toString('base64').substring(0, 24)
-        );
+        const { filename } = IO.getFileAndFolderNameFromMedia(media as any);
+
         const cacheDir = path.join(
           appPath,
           'cache',
           this.providerName,
-          titleToDir
+          filename
         );
         IO.createDirIfNotFound(cacheDir); //TODO next publish of 4u-lib remove this
+
         await IO.downloadStream({
           url: url!,
           cacheDir,
