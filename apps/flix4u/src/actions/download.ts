@@ -9,6 +9,7 @@ import { CLI } from '@iamstarcode/4u-lib';
 import VidSrcTo from '../providers/VidSrcTo.js';
 import _ from 'lodash';
 import HDRezka from '../providers/HDRezka.js';
+import WarezCDN from '../providers/WarezCDN.js';
 
 type Providers = Pick<IBaseProvider, 'providerName'>;
 const downloadAction = async (
@@ -38,6 +39,9 @@ const downloadAction = async (
   } else if (providerName == 'hdrezka') {
     const hdrezka = new HDRezka(obj);
     await hdrezka.run();
+  } else if (providerName == 'warezcdn') {
+    const warezcdn = new WarezCDN(obj);
+    await warezcdn.run();
   } else {
     console.log(chalk.red('Provider not found'));
     process.exit(0);

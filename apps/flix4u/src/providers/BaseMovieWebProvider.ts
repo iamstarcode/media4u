@@ -375,18 +375,20 @@ export class BaseMovieWebProvider implements IHandleStream {
     const url = choosen![this.options.quality].url;
     const type = media.type;
 
-    //if we get a url we can inform
-    const titleToDir = IO.sanitizeDirName(
-      Buffer.from(url).toString('base64').substring(0, 24)
-    );
-
-    const cacheDir = path.join(appPath, 'cache', this.providerName, titleToDir);
-
     if (this.options.subtitleOnly) {
       CLI.printInfo('Downloading Subtitle...');
       await this.downloadSubtitle(stream.captions, media);
     } else {
       if (stream.type == 'hls') {
+        const titleToDir = IO.sanitizeDirName(
+          Buffer.from(url).toString('base64').substring(0, 24)
+        );
+        const cacheDir = path.join(
+          appPath,
+          'cache',
+          this.providerName,
+          titleToDir
+        );
         IO.createDirIfNotFound(cacheDir); //TODO next publish of 4u-lib remove this
         await IO.downloadStream({
           url: url!,
