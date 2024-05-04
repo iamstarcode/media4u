@@ -63,7 +63,7 @@ export class BaseProvider {
 
   async run() {
     let medias: IAnimeResult[] = await this.getAnime();
-    //console.log(medias);
+    //console.log(medias, 'bcgfchfbcgh');
     let media: IAnimeResult = await CLI.inquireMedia(medias);
 
     let quality;
@@ -135,16 +135,21 @@ export class BaseProvider {
     spinner.stop();
     console.log(chalk.green(`Anime search complete \u2713`));
 
-    if (medias == undefined || medias.length < 0) {
+    const mapped = medias.map((media) => {
+      media['release_date'] = media.releaseDate;
+      delete media.releaseDate;
+      return media;
+    });
+    if (mapped == undefined || mapped.length < 0) {
       console.log(chalk.red(`No anime found \u2715 `));
       return [];
     } else {
       IO.createFileIfNotFound(
         this.searchPath,
         `${this.query}.json`,
-        JSON.stringify(medias)
+        JSON.stringify(mapped)
       );
-      return medias;
+      return mapped;
     }
   }
 

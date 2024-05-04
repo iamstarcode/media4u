@@ -152,9 +152,9 @@ export const inquireMedia = async (medias: any[]) => {
       return medias.map(
         (media: { title: string; type: string; release_date: string }) => {
           const { type, release_date, title } = media;
-          let name = '';
+          let name = title;
           if (type) {
-            name += `${title} [${type.toLocaleUpperCase()}]`;
+            name += ` [${type.toLocaleUpperCase()}]`;
           }
           if (release_date) {
             name += ` [${release_date}]`;
