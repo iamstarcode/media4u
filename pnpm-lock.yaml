@@ -27,8 +27,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/4u-lib
       '@lzwme/m3u8-dl':
-        specifier: github:iamstarcode/m3u8-dl#hot-fix
-        version: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049
+        specifier: ^0.0.8
+        version: 0.0.8
       axios:
         specifier: ^1.4.0
         version: 1.6.2
@@ -157,9 +157,6 @@ importers:
 
   packages/4u-lib:
     dependencies:
-      '@consumet/extensions':
-        specifier: ^1.5.2
-        version: 1.5.4
       '@inquirer/select':
         specifier: ^2.3.1
         version: 2.3.1
@@ -172,15 +169,9 @@ importers:
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
-      enquirer:
-        specifier: ^2.4.1
-        version: 2.4.1
       inquirer-autocomplete-standalone:
         specifier: ^0.8.1
         version: 0.8.1
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       node-downloader-helper:
         specifier: ^2.1.7
         version: 2.1.9
@@ -188,9 +179,6 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2
     devDependencies:
-      '@types/lodash':
-        specifier: ^4.14.201
-        version: 4.14.201
       '@types/node':
         specifier: ^20.2.5
         version: 20.9.1
@@ -291,9 +279,6 @@ packages:
     resolution: {integrity: sha512-PXDQXkAmiMEG162Bqdh9ChML/GJZo6vU+7F03ALKDK8zYc6SuAr47LjG7hGYRqUOz+WK0dU7bQ0xzuqFMdxzeQ==}
     engines: {node: '>=v14'}
 
-  '@consumet/extensions@1.5.4':
-    resolution: {integrity: sha512-uAuuDR10CrZLGN7YRXaeclTnObTN2eB3Dwk8q8qWx5XFxsGoo8iJ5rJO8iK5DVZ5Gbu8tRKPegxj9/XkP7Tnzw==}
-
   '@consumet/extensions@1.5.6':
     resolution: {integrity: sha512-0ei+FXT2eQAMNGwpfGL7i4C6f9lthrtagMABbVANQa/+qimN/Y+00H+g+u/nynVlECiouYF2T8R9SFE3eusKmg==}
 
@@ -348,12 +333,6 @@ packages:
 
   '@lzwme/m3u8-dl@0.0.8':
     resolution: {integrity: sha512-szPbHZYVqEcqJ1TK6raW8Q48Bom5kf/fZxns8BWlcD3mTvkTYx2JzgIle0yDxYLCZizOoRyamwa29nKaIWEwXg==}
-    engines: {node: '>=14.18'}
-    hasBin: true
-
-  '@lzwme/m3u8-dl@https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049':
-    resolution: {tarball: https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049}
-    version: 0.0.7
     engines: {node: '>=14.18'}
     hasBin: true
 
@@ -1618,16 +1597,6 @@ snapshots:
     dependencies:
       chalk: 4.1.2
 
-  '@consumet/extensions@1.5.4':
-    dependencies:
-      ascii-url-encoder: 1.2.0
-      axios: 0.27.2
-      cheerio: 1.0.0-rc.12
-      crypto-js: 4.2.0
-      form-data: 4.0.0
-    transitivePeerDependencies:
-      - debug
-
   '@consumet/extensions@1.5.6':
     dependencies:
       ascii-url-encoder: 1.2.0
@@ -1701,18 +1670,6 @@ snapshots:
       tslib: 2.6.2
 
   '@lzwme/m3u8-dl@0.0.8':
-    dependencies:
-      '@lzwme/fe-utils': 1.7.2
-      commander: 12.0.0
-      console-log-colors: 0.4.0
-      enquirer: 2.4.1
-      m3u8-parser: 7.1.0
-    transitivePeerDependencies:
-      - '@iarna/toml'
-      - compressing
-      - windows-process-tree
-
-  '@lzwme/m3u8-dl@https://codeload.github.com/iamstarcode/m3u8-dl/tar.gz/bbc8790f049cc5de2c34c375d8fe76c56df6a049':
     dependencies:
       '@lzwme/fe-utils': 1.7.2
       commander: 12.0.0
