@@ -63,7 +63,7 @@ export class BaseProvider {
 
   async run() {
     let medias: IAnimeResult[] = await this.getAnime();
-    //console.log(medias, 'bcgfchfbcgh');
+
     let media: IAnimeResult = await CLI.inquireMedia(medias);
 
     let quality;
@@ -194,7 +194,7 @@ export class BaseProvider {
       console.log(chalk.yellow(`No episodes found, may not be aired yet!`));
       process.exit(1);
     } else {
-      console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
+      //console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
       //IO.createDirIfNotFound(this.searchPath);
 
       IO.createFileIfNotFound(mediaPath, `links.json`, JSON.stringify(data));
