@@ -33,9 +33,9 @@ export interface IGetEpisodeSources {
 
 export interface IHandleMediaDownload {
   animeInfo: IAnimeInfo;
-  type: MediaFormat;
+  //type: MediaFormat;
   choosen: any;
-  episode: never;
+  episode: number;
   source: ISource;
 }
 export class BaseProvider {
@@ -66,22 +66,18 @@ export class BaseProvider {
 
     let media: IAnimeResult = await CLI.inquireMedia(medias);
 
-    let quality;
-
     if (!this.options.quality) {
-      quality = await CLI.inquireQuality();
-    } else {
-      quality = this.options.quality;
+      this.options.quality = await CLI.inquireQuality();
     }
 
     const animeInfo = await this.getAnimeInfo(media);
 
-    const type = await this.getMediaType({
+    /*  const type = await this.getMediaType({
       type: media.type?.toString(),
       media,
-    });
+    }); */
 
-    await this.handleDownload({ animeInfo, quality: quality.toString(), type });
+    await this.handleDownload({ animeInfo });
 
     process.exit(0);
   }
@@ -203,6 +199,96 @@ export class BaseProvider {
     return data;
   }
 
+  async handleDownload({ animeInfo }: { animeInfo: IAnimeInfo }) {
+    const spinner = this.getSpinner();
+
+    if (
+      animeInfo.type == MediaFormat.MOVIE ||
+      animeInfo.episodes?.length! == 1
+    ) {
+      ///
+      let searchText = `Searching for ${animeInfo.title} info...`;
+      spinner.text = searchText;
+      spinner.start();
+
+      let choosen;
+      let source: ISource | null;
+
+      source = await this.fetchEpisodeSourcesWithRetry({
+        animeInfo,
+        episode: 1,
+        maxRetries: 3,
+      });
+      spinner.stop();
+
+      CLI.printInfo('Link search complete \u2713');
+      if (source == null) {
+        CLI.printError(`Could not find any Link, please try again!`);
+        process.exit(0);
+      }
+
+      choosen = this.getChoosenQuality(source.sources, this.options.quality);
+
+      await this.handleMediaDownload({
+        animeInfo,
+        episode: 1,
+        choosen,
+        source,
+      });
+    } else {
+      for (let i = 0; i < this.options.episodes.length; i++) {
+        let choosen;
+        let source: ISource | null;
+        const episode = this.options.episodes[i];
+
+        spinner.text = `Searching for ${chalk.yellow(
+          animeInfo.title
+        )} Episode ${chalk.yellow(episode)} download link`;
+        spinner.start();
+
+        source = await this.fetchEpisodeSourcesWithRetry({
+          animeInfo,
+          episode,
+          maxRetries: 3,
+        });
+
+        spinner.stop();
+
+        CLI.printInfo(
+          chalk.yellow(
+            'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
+          )
+        );
+
+        if (source == null) {
+          CLI.printInfo(
+            `Could not find episode ${chalk.yellow(episode)}, please try again!`
+          );
+
+          CLI.printInfo(
+            `Total available episode is ${chalk.yellow(
+              animeInfo.episodes?.length!
+            )}`
+          );
+
+          CLI.printInfo('Episode might not be available yet!');
+
+          continue;
+        }
+
+        choosen = this.getChoosenQuality(source.sources, this.options.quality);
+
+        await this.handleMediaDownload({
+          animeInfo,
+          episode,
+          choosen,
+
+          source,
+        });
+      }
+    }
+  }
+
   getLinksPath({ title }: { title: string | ITitle }) {
     const linksPath = path.join(
       this.searchPath,
@@ -245,17 +331,22 @@ export class BaseProvider {
     return choosen;
   }
 
-  async getEpisodeSources({
+  async fetchEpisodeSourcesWithRetry({
     animeInfo,
     episode,
-  }: IGetEpisodeSources): Promise<ISource | null> {
+    maxRetries = 3,
+  }: {
+    animeInfo: IAnimeInfo;
+    episode: number;
+    maxRetries: number;
+  }): Promise<ISource | null> {
     const linksPath = this.getLinksPath({ title: animeInfo.title });
 
     const linksString = readFileSync(linksPath).toString();
     const _animeInfo: IAnimeInfo = JSON.parse(linksString);
 
     const _episode: IAnimeEpisode = _.find(
-      animeInfo.episodes,
+      _animeInfo.episodes,
       (o: IAnimeEpisode) => o.number == episode
     );
 
@@ -263,132 +354,36 @@ export class BaseProvider {
       return null;
     }
 
-    let data: ISource;
+    let retryCount = 0;
+    let error;
 
-    data = await this.provider.fetchEpisodeSources(_episode.id);
+    while (retryCount < maxRetries) {
+      try {
+        const data = await this.provider.fetchEpisodeSources(_episode.id);
+        return data;
+      } catch (err) {
+        error = err;
+        retryCount++;
 
-    return data;
-  }
-
-  //By default search Animeinfo
-  //But Others that uses session like Animepahe should overide this and get AnimeResult first
-  //Before Anime Info
-  async retryGetEpisodeSources({ animeInfo, episode }: IGetEpisodeSources) {
-    //silenlty refresh cache
-    const _animeInfo = await this.fetchAnimeInfo(animeInfo);
-    const source = await this.getEpisodeSources({
-      animeInfo: _animeInfo,
-      episode,
-    });
-
-    return source;
-  }
-
-  async handleDownload({
-    animeInfo,
-    quality,
-    type,
-  }: {
-    animeInfo: IAnimeInfo;
-    quality: string;
-    type: MediaFormat;
-  }) {
-    const spinner = this.getSpinner();
-
-    for (let i = 0; i < this.options.episodes.length; i++) {
-      let choosen;
-      let source: ISource | null;
-
-      const episode = this.options.episodes[i];
-
-      if (type === MediaFormat.TV) {
-        spinner.text = `Searching for ${chalk.yellow(
-          animeInfo.title
-        )} Episode ${chalk.yellow(episode)} download link`;
-        spinner.start();
-      } else {
-        spinner.text = `Searching for ${chalk.yellow(
-          animeInfo.title
-        )} Movie download link`;
-        spinner.start();
-      }
-
-      //for movies exit earlier
-      if (episode > 1 && type == MediaFormat.MOVIE) {
-        spinner.stop();
-        console.log(chalk.yellow('You selected a movie'));
-        console.log(chalk.yellow('You should remove the episode option'));
-        break;
-      }
-
-      source = await this.getEpisodeSources({
-        animeInfo,
-        episode,
-      });
-
-      spinner.stop();
-
-      //Check for expired sessions(Animepahe), if expired re-run without using caches i'e fecthes
-      //Or just do a retry
-      if (source?.sources?.length == 0) {
-        const source = await this.retryGetEpisodeSources({
-          animeInfo,
-          episode,
-        });
-      }
-
-      if (type == MediaFormat.MOVIE) {
-        console.log(chalk.yellow('Movie link search complete \u2713'));
-      } else {
-        console.log(
-          'Episode ' + chalk.yellow(episode) + ' link search complete \u2713'
+        CLI.printInfo(
+          `Error fetching episode sources. Retrying (${retryCount}/${maxRetries})...`
         );
-      }
-
-      if (source == null && type == MediaFormat.TV) {
-        console.log(
-          chalk.red(
-            `Could not find episode ${chalk.yellow(episode)}, please try again!`
-          )
-        );
-        if (
-          animeInfo.episodes != undefined &&
-          episode > animeInfo.episodes.length
-        ) {
-          console.log(
-            `Total available episode is ${chalk.yellow(
-              animeInfo.episodes.length
-            )}`
-          );
-        }
-        console.log('Episode might not be available yet!');
-
-        break;
-      } else if (source == null && type == MediaFormat.MOVIE) {
-        console.log(chalk.red(`Could not find movie, please try again!`));
-      } else if (source != null) {
-        choosen = this.getChoosenQuality(source.sources, parseInt(quality));
-
-        await this.handleMediaDownload({
-          animeInfo,
-          episode,
-          choosen,
-          type,
-          source,
-        });
       }
     }
+
+    CLI.printError('Episode source fetch failed');
+    if (this.options.debug) throw error; // If all retries fail, throw the last encountered error.
+    return null;
   }
 
   async handleMediaDownload({
     animeInfo,
     choosen,
-    type,
     episode,
     source,
   }: IHandleMediaDownload) {
-    if (type == MediaFormat.MOVIE) {
-      await this.saveAsMovie(animeInfo, 1, choosen, source);
+    if (animeInfo.type == MediaFormat.MOVIE) {
+      await this.saveAsMovie(animeInfo, episode, choosen, source);
     } else {
       await this.saveAsSeries(animeInfo, episode, choosen, source);
     }
@@ -403,11 +398,11 @@ export class BaseProvider {
     const saveDir = IO.sanitizeDirName(animeInfo.title.toString());
     IO.createDirIfNotFound(saveDir);
 
-    const titleToDir = IO.sanitizeDirName(
+    /*  const titleToDir = IO.sanitizeDirName(
       Buffer.from(choosen.url).toString('base64').substring(0, 24)
-    );
+    ); */
 
-    console.log(
+    CLI.printInfo(
       `Now downloading: ${chalk.yellow(animeInfo.title)} Episode ${chalk.yellow(
         episode
       )} `
@@ -418,7 +413,7 @@ export class BaseProvider {
       'anim4u',
       this.providerName,
       'cache',
-      titleToDir,
+      saveDir,
       'E' + episode
     );
 
@@ -442,17 +437,14 @@ export class BaseProvider {
     sources: ISource
   ) {
     console.log(`${chalk.yellow(animeInfo.title)} link search complete \u2713`);
-
-    const titleToDir = IO.sanitizeDirName(
-      Buffer.from(choosen.url).toString('base64').substring(0, 24)
-    );
+    const saveDir = IO.sanitizeDirName(animeInfo.title.toString());
 
     const cacheDir = path.join(
       homedir(),
       'anim4u',
       this.providerName,
       'cache',
-      titleToDir
+      saveDir
     );
 
     const name: string = animeInfo.title.toString();

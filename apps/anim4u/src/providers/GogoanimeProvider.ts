@@ -132,7 +132,7 @@ export class GogoanimeProvider extends BaseProvider {
       console.log(chalk.yellow(`No episodes found, may not be aired yet!`));
       process.exit(1);
     } else {
-      console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
+      //console.log(chalk.yellow(anime.title) + ' info search complete \u2713');
       //IO.createDirIfNotFound(this.searchPath);
 
       IO.createFileIfNotFound(

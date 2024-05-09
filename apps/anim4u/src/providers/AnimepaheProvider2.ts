@@ -199,13 +199,12 @@ export class AnimepaheProvider extends BaseProvider {
     choosen,
     episode,
     source,
-    type,
   }: IHandleMediaDownload) {
     let searchText = '';
     let nowDownloadinText = '';
     let fileName = '';
     const spinner = this.getSpinner();
-    if (type == MediaFormat.TV) {
+    if (animeInfo.type == MediaFormat.TV) {
       searchText = `Searching for ${chalk.yellow(
         animeInfo.title
       )} episode ${chalk.yellow(episode)} link`;
@@ -213,7 +212,7 @@ export class AnimepaheProvider extends BaseProvider {
         animeInfo.title
       )} Episode ${chalk.yellow(episode)} `;
       fileName = `E${episode}`;
-    } else if (type == MediaFormat.MOVIE) {
+    } else if (animeInfo.type == MediaFormat.MOVIE) {
       searchText = `Searching for ${chalk.yellow(animeInfo.title)} movie link`;
       nowDownloadinText = `Now downloading: ${chalk.yellow(animeInfo.title)}`;
       fileName = IO.sanitizeFileName(animeInfo.title.toString());
@@ -256,7 +255,8 @@ export class AnimepaheProvider extends BaseProvider {
 
       console.log(chalk.white(nowDownloadinText));
 
-      const folder = type == 'TV' ? animeInfo.title.toString() : undefined;
+      const folder =
+        animeInfo.type == 'TV' ? animeInfo.title.toString() : undefined;
 
       await this.download(_url, fileName, IO.sanitizeDirName(folder!));
     } catch (error) {

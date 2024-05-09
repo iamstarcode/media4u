@@ -11,8 +11,6 @@ import { DownloaderHelper } from 'node-downloader-helper';
 import { m3u8Download } from '@lzwme/m3u8-dl';
 import { convert, detect, parse } from 'subsrt-ts';
 
-import Subtitle from 'subsrt-ts';
-
 import { ContentCaption } from 'subsrt-ts/dist/types/handler';
 import { CLI } from './index.js';
 

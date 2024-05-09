@@ -193,7 +193,7 @@ export async function inquireQuality() {
 }
 
 export const printInfo = (message: string) => {
-  console.log(`${chalk.blue('[INFO]')} ${message}`);
+  console.log(`${chalk.hex('08458f')('[INFO]')} ${message}`);
 };
 
 export const printWarn = (message: string) => {
