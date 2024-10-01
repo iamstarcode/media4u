@@ -56,7 +56,13 @@ export interface IBaseProvider {
   query: string;
   provider: ISupportedProvider;
   searchPath: string;
-  providerName: 'flixhq' | 'moviehdwatch' | 'vidsrcto' | 'hdrezka' | 'warezcdn';
+  providerName:
+    | 'flixhq'
+    | 'moviehdwatch'
+    | 'vidsrcto'
+    | 'hdrezka'
+    | 'warezcdn'
+    | 'm4ufree';
 }
 
 export type MovieWebBaseProviderType = Omit<IBaseProvider, 'provider'>;

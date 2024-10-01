@@ -44,6 +44,7 @@ export default class WarezCDN extends BaseMovieWebProvider {
         id: embed.embedId,
         url: embed.url,
       });
+      console.log(embed, 'dgrdgrgregre');
       if (embed.embedId == 'warezcdnembedhls') {
         const streamWithQualities = await this.warezcdnembedhlsExtractor(
           output.stream[0] as any

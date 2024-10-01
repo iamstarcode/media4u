@@ -235,7 +235,7 @@ export class BaseMovieWebProvider implements IHandleStream {
 
       const media: ScrapeMedia = {
         title: movieData.title,
-        releaseYear: +movieData.release_date.substring(0, 4),
+        releaseYear: +movieData.release_date?.substring(0, 4),
         tmdbId: movieData.id,
         type: 'movie',
         imdbId: movieData.imdb_id,
@@ -334,19 +334,24 @@ export class BaseMovieWebProvider implements IHandleStream {
     const maxRetries = 3; // Adjust as needed (consider success rate and API limits)
     let attempts = 0;
 
+    // console.log(media, 'dgdjhtkj');
+
     while (attempts < maxRetries) {
+      // console.log(provider, 'jhghjgyugu');
       try {
         const output = await providers.runSourceScraper({
           media,
           id: provider,
         });
 
+        //   console.log(output.embeds, 'chdchdjhj');
         if (output.stream || output.embeds) {
           if (output.stream) {
             const stream = output.stream[0];
             return stream as StreamWithQulaities;
-          } else {
-            const stream = this.handleEmbeds(output.embeds);
+          } else if (output.embeds) {
+            console.log(output.embeds, 'before');
+            const stream = await this.handleEmbeds(output.embeds);
             return stream;
           }
         }
@@ -367,13 +372,11 @@ export class BaseMovieWebProvider implements IHandleStream {
     process.exit(0);
   }
 
-  async downloadHlsOrFileStream(
-    media: ScrapeMedia,
-    stream: StreamWithQulaities
-  ) {
+  async downloadHlsOrFileStream(media: any, stream: StreamWithQulaities) {
     const choosen = this.findClosestResolution(stream?.qualities);
     const url = choosen![this.options.quality].url;
     const type = media.type;
+    const spinner = this.getSpinner();
 
     if (this.options.subtitleOnly) {
       CLI.printInfo('Downloading Subtitle...');
@@ -390,12 +393,22 @@ export class BaseMovieWebProvider implements IHandleStream {
         );
         IO.createDirIfNotFound(cacheDir); //TODO next publish of 4u-lib remove this
 
+        console.log(
+          `Now downloading ${media.title} Season ${
+            media.season.number as any
+          } Episode ${media.episode.number}...`
+        );
+
+        //spinner.start();
+
         await IO.downloadStream({
           url: url!,
           cacheDir,
           headers: stream.headers!,
           media: media as any,
         });
+
+        spinner.stop();
       } else {
         await IO.downloadFile({ media: media as any, url });
       }
@@ -451,7 +464,7 @@ export class BaseMovieWebProvider implements IHandleStream {
     return makeProviders({
       fetcher: makeStandardFetcher(fetch),
       target: targets.ANY,
-      consistentIpForRequests: true,
+      // consistentIpForRequests: true,
     });
   }
 }

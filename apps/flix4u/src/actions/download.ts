@@ -10,6 +10,7 @@ import VidSrcTo from '../providers/VidSrcTo.js';
 import _ from 'lodash';
 import HDRezka from '../providers/HDRezka.js';
 import WarezCDN from '../providers/WarezCDN.js';
+import M4UFree from '../providers/M4UFree.js';
 
 type Providers = Pick<IBaseProvider, 'providerName'>;
 const downloadAction = async (
@@ -42,6 +43,9 @@ const downloadAction = async (
   } else if (providerName == 'warezcdn') {
     const warezcdn = new WarezCDN(obj);
     await warezcdn.run();
+  } else if (providerName == 'm4ufree') {
+    const m4ufree = new M4UFree(obj);
+    await m4ufree.run();
   } else {
     console.log(chalk.red('Provider not found'));
     process.exit(0);

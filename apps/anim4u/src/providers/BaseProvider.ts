@@ -153,7 +153,7 @@ export class BaseProvider {
     const mediaPath = path.join(this.searchPath, animeResult.title.toString());
     const linksPath = path.join(
       this.searchPath,
-      animeResult.title.toString(),
+      IO.sanitizeDirName(animeResult.title.toString()),
       `links.json`
     );
 
@@ -423,7 +423,7 @@ export class BaseProvider {
       showProgress: true,
       filename: `E${episode}`,
       saveDir: `${saveDir}`,
-      cacheDir,
+      cacheDir, //: `"${cacheDir}"`,
       headers: sources.headers,
     });
 

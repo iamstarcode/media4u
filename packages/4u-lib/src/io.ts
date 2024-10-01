@@ -70,9 +70,10 @@ export function sanitizeDirName(folderName: string) {
   // Define a regular expression to match special characters
   const regex = /[<>:"\/\\|?*]/g;
 
-  const sanitizedFolderName = folderName.replace(regex, '-');
+  const sanitizedFolderName = folderName.trim().replace(regex, '-');
+  const sanitizedFolderNameX = sanitizedFolderName.replace(/\s+/g, '_');
 
-  return sanitizedFolderName;
+  return sanitizedFolderNameX;
 }
 
 export function sanitizeFileName(fileName: string) {
